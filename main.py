@@ -23,10 +23,14 @@ Output:
 from typing import List, Tuple
 import re
 
+from pprint import pprint
+
 # error_context = ''
 
+xactions = {}
 
-def process_EQ(tail):
+
+def process_EQ(tail, accum):
     """Process the 'tail' of a record as an activity on an
     Equity position.
     """
@@ -43,7 +47,7 @@ def process_EQ(tail):
     return {}
 
 
-def process_MF(tail):
+def process_MF(tail, accum):
     """Process the 'tail' of a record as an activity on a
     Mutual Fund position.
     """
@@ -51,7 +55,7 @@ def process_MF(tail):
     return {}
 
 
-def process_unknown(tail):
+def process_unknown(tail, accum):
     """Process the 'tail' of a record as an activity on an
     unknown position.
     """
@@ -123,27 +127,30 @@ position_processors = {'EQ': process_EQ,
 
 
 def parse_record(rec) -> Tuple:
-    """Extract fields from a record."""
+    """Extract fields from a record.
+    Returns a tuple:
+        (Date, activity, invest_type, symbol, description,
+         manager, quantity, value, Commission, foreign_tax)
+    """
 
-    desc_ndx = 8
     error_context = f'\nRaw record:\n  >{rec}\n'
     rec = rec.strip()
 
-    platform = 'eTrade'
-    account = ''
+    # platform = 'eTrade'
+    # account = ''
     Date = ''
-    activity = 'Dividend'   # Dividend, Interest, Transfer
+    activity = ''   # Dividend, Interest, Transfer
     invest_type = ''
     symbol = ''
     description = ''
     manager = ''
     quantity = ''
+    value = ''
     price = ''
-    cost = ''
-    fee = ''
+    Commission = ''
     foreign_tax = ''
 
-    contents = {}
+    contents = ()
     m = gross_exp.match(rec)
     if m:
         error_context += (f'  Matched {len(m.groups())} captures:\n')
@@ -151,123 +158,45 @@ def parse_record(rec) -> Tuple:
             error_context += (f'    Matched >{g}<\n')
 
         Date = m.group(1).strip()
+        activity = m.group(2).strip()
         invest_type = m.group(3).strip()
         symbol = m.group(4).strip()
+        quantity = m.group(5).strip()
+        value = m.group(6).strip()
+        Commission = m.group(7).strip()
 
-        if invest_type in position_processors:
-            position_processors[invest_type](m.group(9))
-            print(error_context)
+        if not invest_type in xactions:
+            xactions[invest_type] = {}
 
-        # if invest_type == 'EQ':
-        #     # print('EQ')
-        #     m = EQ_exp.match(rec)
-        #     if m:
-        #         error_context += (
-        #             f'\n  EQ expression matched {len(m.groups())} captures:\n')
-        #         for g in m.groups():
-        #             error_context += (f'    Matched >{g}<\n')
-        #         print(f'Decoding EQ:\n{error_context}')
-        #     pass
+        if not activity in xactions[invest_type]:
+            xactions[invest_type][activity] = []
 
-        # elif invest_type == 'MF':
-        #     # print('MF')
-        #     m = MF_exp.match(rec)
-        #     if m:
-        #         error_context += (
-        #             f'\n  MF expression matched {len(m.groups())} captures:\n')
-        #         for g in m.groups():
-        #             error_context += (f'    Matched >{g}<\n')
-        #     pass
+        xactions[invest_type][activity].append(m.group(9))
+        if activity in xactions[invest_type]:
+            position_processors[invest_type](
+                m.group(9), xactions[invest_type][activity])
 
-        # else:
-        #     pass
-
-        # description = m.group(9).strip()
-        # manager = m.group(10).strip()
-        # quantity = ''
-        # price = ''
-        # cost = ''
-        # fee = ''
-        # foreign_tax = ''
-
-        # print(f'  group[{desc_ndx}] >{m.group(desc_ndx)}<')
-        # description=m.group(desc_ndx)
         error_context += (f'\n>>>{description}<\n')
-        # ndx=description.find('  ')
-        # if ndx > 0:
-        #     desc=description[:ndx].strip()
-        # print(f'Desc: >{desc}<')
-        # ndx = description.find('  ', ndx+2)
-        # if ndx > 0:
-        #     tail = description[ndx:].strip()
-        #     error_context += (
-        #         f'\n  line: >{rec}<\n'
-        #         f'  desc: >{description}<\n'
-        #         f'  tail: >{tail}<\n')
-
-        #     # REINVEST?
-        #     # ndx = tail.find('REINVEST PRICE $')
-        #     # if ndx >= 0:
-        #     #     print('***: REINVEST PRICE $')
-        #     m = reinvest_exp.search(tail)
-        #     if m:
-        #         pass
-        #         print(f'reinvest: {m.group(1)}')
-
-        #     else:
-        #         m = record_exp.match(tail)
-        #         if m:
-        #             pass
-        #             print(f'rec {m.group(1)}; pay: {m.group(1)}')
-
-        #         else:
-        #             m = reinvest_exp.match(tail)
-        #             if m:
-        #                 pass
-        #                 print(f'reinvest: {m.group(1)}')
-
-        #             else:
-        #                 if st_cg_exp.match(tail):
-        #                     pass
-        #                     print(
-        #                         f'Short Term Capita; Gains.@@@@@@@@@@@@@@@@@@@@')
-
-        #                 else:
-        #                     if lt_cg_exp.match(tail):
-        #                         pass
-        #                         print(
-        #                             f'Long Term Capita; Gains.@@@@@@@@@@@@@@@@@@@@')
-
-        #                     elif tail == 'FIDELITY INVESTMENTS':
-        #                         pass
-        #                         print('Fidelity Investments.')
-
-        # else:
-        #     error_context += (
-        #         '\n***************************\n'
-        #         'unidentified transaction\n'
-        #         # f'  line: >{rec}<\n'
-        #         # f'  tail: >{tail}<\n'
-        #         '***************************\n')
-        #     print(error_context)
 
     else:
         print(f'Failed to match gross expression.')
         print(error_context)
+        return contents
 
-    contents = {platform, account, Date, activity, invest_type, symbol,
-                description, manager, quantity, price, cost, fee, foreign_tax}
+    contents = (Date, activity, invest_type, symbol, description,
+                manager, quantity, value, Commission, foreign_tax)
+    # print(f'contents:\n  {contents}')
     return contents
 
 
 def read_file(fn) -> Tuple[str, List[str]]:
     """ Read a file into a list of lines.
     Returns a tuple containing the account number and a list
-    of lines.
+    of lines:  (acct_no, trading_log)
     """
 
     acct_no = ''
-    lines_read = []
+    trading_log = []
 
     with open(fn, mode='r', encoding='utf8') as input:
         lines = input.readlines()
@@ -287,36 +216,7 @@ def read_file(fn) -> Tuple[str, List[str]]:
         header = lines[:4]
         print(f'Header:\n{header}')
 
-    #
-    # 12/20/19,Dividend,MF,NSIDX,0.324,-4.29,0,0,NORTHERN SMALL CAP INDEX      NORTHERN FUNDS                REINVEST PRICE $ 13.23
-    # 12/20/19, Dividend, MF, NSIDX, 3.028, -40.06, 0, 0, NORTHERN SMALL CAP INDEX      NORTHERN FUNDS                REINVEST PRICE $ 13.23
-    #
-    # date, transaction, instrument type, symbol, quantity, amount, price, commision, description
-    #
-
-        # gross_exp = re.compile(
-        #     # '^([^,]),([^,]),([^,]),([^,]),([^,]),([^,]),([^,]),([^,]),(.*)$')
-        #     '^([\\d/]{8}),(\w+),(EQ|MF),(\w+),((?:\+|\-)?\d+(?:.\d+)?),((?:\+|\-)?\d+(?:.\d+)?),((?:\+|\-)?\d+(?:.\d+)?),(.*)$', re.ASCII)
-        # # detail_exp = re.compile(' +(\w(?: \w+))+')
-
-        # # 'RECORD 02/28/19 PAY 02/28/19'
-        # record_exp = re.compile(
-        #     'RECORD (\d\d/\d\d/\d\d) PAY (\d\d/\d\d/\d\d)')
-
-        # # 'REINVEST PRICE $  8.48'
-        # reinvest_exp = re.compile(
-        #     'REINVEST PRICE \$\s*(\d+\.\d+)')
-
-        # # 'S/T CAPITAL GAIN              RECORD 12/27/19 PAY 12/30/19'
-        # st_cg_exp = re.compile(
-        #     'S/T CAPITAL GAIN\s+RECORD (\d\d/\d\d/\d\d) PAY (\d\d/\d\d/\d\d)')
-
-        # # 'L/T CAPITAL GAIN              RECORD 12/27/19 PAY 12/30/19'
-        # lt_cg_exp = re.compile(
-        #     'L/T CAPITAL GAIN\s+RECORD (\d\d/\d\d/\d\d) PAY (\d\d/\d\d/\d\d)')
-
-        trading_log = [()]
-        # desc_ndx = 8
+        # trading_log = [()]
         ln = 0
         for line in lines[4:]:
             ln = ln + 1
@@ -325,99 +225,35 @@ def read_file(fn) -> Tuple[str, List[str]]:
             rec = parse_record(line)
             if rec:
                 trading_log.append(rec)
+                # print(f'New record:\n  {rec}\nLog:')
+                # pprint(trading_log, indent=2)
+                # print(f'\nFrom line:\n  {line.strip()}\n  New record: {rec}')
 
             else:
                 print(f'\nERROR *** ERROR *** ERROR\n'
-                      f'Parse failed on line {ln}:\n{line}\n'
+                      f'Parse failed on line {ln}:\n{line.strip()}'
                       f'ERROR *** ERROR *** ERROR\n')
 
-            # line = line.strip()
-            # ln = ln + 1
-            # m = gross_exp.match(line)
-            # if m:
-            #     # print(f'\nMatched {len(m.groups())} captures:')
-            #     # for g in m.groups():
-            #     #     print(f'    Matched >{g}<')
+        return (acct_no, trading_log)
 
-            #     # print(f'  group[{desc_ndx}] >{m.group(desc_ndx)}<')
-            #     description = m.group(desc_ndx)
-            #     # print(f'\n>>>{description}<')
-            #     ndx = description.find('  ')
-            #     if ndx > 0:
-            #         desc = description[:ndx].strip()
-            #         # print(f'Desc: >{desc}<')
-            #         ndx = description.find('  ', ndx+2)
-            #         if ndx > 0:
-            #             tail = description[ndx:].strip()
-            #             print(
-            #                 f'\n  line: >{line}<\n'
-            #                 f'  desc: >{description}<\n'
-            #                 f'  tail: >{tail}<')
 
-            #             # REINVEST?
-            #             # ndx = tail.find('REINVEST PRICE $')
-            #             # if ndx >= 0:
-            #             #     print('***: REINVEST PRICE $')
-            #             m = reinvest_exp.search(tail)
-            #             if m:
-            #                 pass
-            #                 print(f'reinvest: {m.group(1)}')
-
-            #             else:
-            #                 m = record_exp.match(tail)
-            #                 if m:
-            #                     pass
-            #                     print(f'rec {m.group(1)}; pay: {m.group(1)}')
-
-            #                 else:
-            #                     m = reinvest_exp.match(tail)
-            #                     if m:
-            #                         pass
-            #                         print(f'reinvest: {m.group(1)}')
-
-            #                     else:
-            #                         if st_cg_exp.match(tail):
-            #                             pass
-            #                             print(
-            #                                 f'Short Term Capita; Gains.@@@@@@@@@@@@@@@@@@@@')
-
-            #                         else:
-            #                             if lt_cg_exp.match(tail):
-            #                                 pass
-            #                                 print(
-            #                                     f'Long Term Capita; Gains.@@@@@@@@@@@@@@@@@@@@')
-
-            #                             elif tail == 'FIDELITY INVESTMENTS':
-            #                                 pass
-            #                                 print('Fidelity Investments.')
-
-            #                             else:
-            #                                 print(
-            #                                     '\n***************************')
-            #                                 print('unidentified transaction')
-            #                                 print(f'  line {ln}: >{line}<')
-            #                                 print(f'  tail: >{tail}<')
-            #                                 print('***************************')
-
-            #             # m = detail_exp.search(tail)
-            #             # # m = detail_exp.search(line)
-            #             # if m:
-
-            #             #     # ndx = description.find('  ', ndx+2)
-            #             #     # if ndx > 0:
-            #             #     trans = m.group(1).strip()
-            #             #     print(f'trans: >{trans}<')
-
-            # else:
-            #     print('ERROR ### ERROR ### ERROR ### ERROR ### ERROR ### ERROR')
-            #     print(f'Failed to parse line:\n>{line[:-1]}<')
-            #     print('ERROR ### ERROR ### ERROR ### ERROR ### ERROR ### ERROR')
-            #     return (acct_no, lines_read)
-
-        return (acct_no, lines_read)
+def display_partial(data):
+    """Display fragments of data."""
+    print(f'data:\n{data}')
+    print(f'Keys:')
+    for datum in data:
+        print(f'  {datum}')
+    print(f'type(data): {type(data)}')
+    print(f'\nPartial contents:')
+    for nv_type in data:
+        print(f'type(nv_type): {type(nv_type)}')
+        print(f'{data.index(nv_type)}: {nv_type}')
+        # print(f'{data[nv_type]}')
 
 
 if __name__ == '__main__':
     srcFile = "./data/transactions.csv"
     contents = read_file(srcFile)
-    print('\n\n\n', contents[:12])
+    print(f'\n\n\n{contents[0]}; {contents[1]}')
+    # pprint(xactions, indent=2)
+    display_partial(contents)
