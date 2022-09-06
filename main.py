@@ -181,7 +181,7 @@ def parse_record(rec) -> Tuple:
          manager, quantity, price, value, Commission, foreign_tax)
     """
 
-    error_context = f'\nRaw record:\n  >{rec}\n'
+    error_context = f'\nRaw record:\n  >{rec}<\n'
     rec = rec.strip()
 
     # platform = 'eTrade'
@@ -226,7 +226,7 @@ def parse_record(rec) -> Tuple:
         if activity in process_activity_vector:
             values = process_activity_vector[activity](m.group(9))
             if values:
-                print(f'Tail: <{values}<')
+                # print(f'Tail: <{values}<')
                 activity = values[0]
                 description = values[1]
                 manager = values[2]
