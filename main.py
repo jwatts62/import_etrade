@@ -29,6 +29,54 @@ from pprint import pprint
 
 xactions = {}
 
+price_exp = re.compile('\$\s+((?:\+|\-)?\d+(?:\.\d+)?)')
+
+
+def process_dividend(t):
+    """Process the 'tail' for a record from a 'Dividend' transaction.
+    Returns:
+        Returns a tuple: (Activity, description, manager, sub-activity, price)
+    """
+    # 0                            30                            60                            90
+    # 30 char's - Description      |                             |                             |
+    # MPLX LP                       COM UNIT REPSTG LTD PARTNER   INT                           REIN @  29.0393
+
+    activity = 'Dividend'
+    desc = t[:30].strip()
+    mgr = t[30:60].strip()
+    sub_act = t[60:].strip()
+    price = 0
+
+    if sub_act.startswith('REINVEST PRICE $'):
+        m = price_exp.search(sub_act)
+        if m:
+            price = m.group(1)
+            activity = 'Buy'
+            # print(f'Matched reinvestment price: {price}.')
+            # print(f'Desc: >{desc}< mgr: >{mgr}< act: >{sub_act}<')
+
+    elif sub_act.startswith('INCLUDED IN'):
+        activity = 'DIV'
+        # print(f'Matched divdend payment I: {price}.')
+        # print(f'Desc: >{desc}< mgr: >{mgr}< act: >{sub_act}<')
+
+    elif sub_act.startswith('RECORD') and 'DIVIDEND RATE' in sub_act:
+        activity = 'Buy'
+        # m = price_exp.search(sub_act)
+        # if m:
+        #     price = m.group(1)
+
+    else:
+        print(
+            f'Tail not recognized:\n  {t}\nDesc: {desc}; mgr: {mgr}; sub_act: {sub_act}.')
+
+    return (activity, desc, mgr, sub_act, price)
+
+
+"""A vector of process functions for the various activities.
+"""
+process_activity_vector = {'Dividend': process_dividend}
+
 
 def process_EQ(tail, accum):
     """Process the 'tail' of a record as an activity on an
@@ -130,7 +178,7 @@ def parse_record(rec) -> Tuple:
     """Extract fields from a record.
     Returns a tuple:
         (Date, activity, invest_type, symbol, description,
-         manager, quantity, value, Commission, foreign_tax)
+         manager, quantity, price, value, Commission, foreign_tax)
     """
 
     error_context = f'\nRaw record:\n  >{rec}\n'
@@ -138,17 +186,17 @@ def parse_record(rec) -> Tuple:
 
     # platform = 'eTrade'
     # account = ''
-    Date = ''
+    Date = '01/01/1900'
     activity = ''   # Dividend, Interest, Transfer
     invest_type = ''
     symbol = ''
     description = ''
     manager = ''
-    quantity = ''
-    value = ''
-    price = ''
-    Commission = ''
-    foreign_tax = ''
+    quantity = 0
+    price = 0
+    value = 0
+    Commission = 0
+    foreign_tax = 0
 
     contents = ()
     m = gross_exp.match(rec)
@@ -172,9 +220,17 @@ def parse_record(rec) -> Tuple:
             xactions[invest_type][activity] = []
 
         xactions[invest_type][activity].append(m.group(9))
-        if activity in xactions[invest_type]:
-            position_processors[invest_type](
-                m.group(9), xactions[invest_type][activity])
+        # if activity in xactions[invest_type]:
+        #     position_processors[invest_type](
+        #         m.group(9), xactions[invest_type][activity])
+        if activity in process_activity_vector:
+            values = process_activity_vector[activity](m.group(9))
+            if values:
+                print(f'Tail: <{values}<')
+                activity = values[0]
+                description = values[1]
+                manager = values[2]
+                price = values[4]
 
         error_context += (f'\n>>>{description}<\n')
 
@@ -184,7 +240,7 @@ def parse_record(rec) -> Tuple:
         return contents
 
     contents = (Date, activity, invest_type, symbol, description,
-                manager, quantity, value, Commission, foreign_tax)
+                manager, quantity, price, value, Commission, foreign_tax)
     # print(f'contents:\n  {contents}')
     return contents
 
@@ -211,7 +267,7 @@ def read_file(fn) -> Tuple[str, List[str]]:
         else:
             print(
                 f'\nERROR\nFailed to extract account number from file header.\n  >{lines[0]}<')
-            return (acct_no, lines_read)
+            return (acct_no, lines)
 
         header = lines[:4]
         print(f'Header:\n{header}')
@@ -219,12 +275,15 @@ def read_file(fn) -> Tuple[str, List[str]]:
         # trading_log = [()]
         ln = 0
         for line in lines[4:]:
+            line = line.strip()
             ln = ln + 1
 
             # print(f'  Line {ln}:\n    [{line[:-1]}]')
             rec = parse_record(line)
             if rec:
                 trading_log.append(rec)
+                print(
+                    f'Line: >{line}<\n         Date, Activity, Type, Symbol, Desc, Mgr, Qty, Price, Value, Commission, tax\nRecord: >{rec}<\n')
                 # print(f'New record:\n  {rec}\nLog:')
                 # pprint(trading_log, indent=2)
                 # print(f'\nFrom line:\n  {line.strip()}\n  New record: {rec}')
@@ -240,20 +299,20 @@ def read_file(fn) -> Tuple[str, List[str]]:
 def display_partial(data):
     """Display fragments of data."""
     print(f'data:\n{data}')
-    print(f'Keys:')
-    for datum in data:
-        print(f'  {datum}')
-    print(f'type(data): {type(data)}')
-    print(f'\nPartial contents:')
-    for nv_type in data:
-        print(f'type(nv_type): {type(nv_type)}')
-        print(f'{data.index(nv_type)}: {nv_type}')
-        # print(f'{data[nv_type]}')
+    # print(f'Keys:')
+    # for datum in data:
+    #     print(f'  {datum}')
+    # print(f'type(data): {type(data)}')
+    # print(f'\nPartial contents:')
+    # for nv_type in data:
+    #     print(f'type(nv_type): {type(nv_type)}')
+    #     print(f'{data.index(nv_type)}: {nv_type}')
+    #     # print(f'{data[nv_type]}')
 
 
 if __name__ == '__main__':
     srcFile = "./data/transactions.csv"
     contents = read_file(srcFile)
-    print(f'\n\n\n{contents[0]}; {contents[1]}')
+    # print(f'\n\n\n{contents[0]}; {contents[1]}')
     # pprint(xactions, indent=2)
-    display_partial(contents)
+    # display_partial(contents)
