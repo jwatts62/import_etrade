@@ -45,7 +45,7 @@ def process_dividend(t):
     instrument = t[:30].strip()
     mgr = t[30:60].strip()
     sub_act = t[60:].strip()
-    price = 0
+    price = 0.0
 
     print(
         f'instrument: "{instrument}",\n       mgr: "{mgr}"\n    subact: "{sub_act}"')
@@ -58,15 +58,22 @@ def process_dividend(t):
             # print(f'Desc: >{desc}< mgr: >{mgr}< act: >{sub_act}<')
 
     elif sub_act.startswith('INCLUDED IN'):
-        activity = 'DIV'
+        pass
+        # activity = 'Dividend'
         # print(f'Matched divdend payment I: {price}.')
         # print(f'Desc: >{desc}< mgr: >{mgr}< act: >{sub_act}<')
 
     elif sub_act.startswith('RECORD') and 'DIVIDEND RATE' in sub_act:
-        activity = 'Dividend'
+        pass
+        # activity = 'Dividend'
         # m = price_exp.search(sub_act)
         # if m:
         #     price = m.group(1)
+
+    elif sub_act.startswith('REC ') and mgr.startswith('CASH DIV  ON '):
+        mgr = ''
+        pass
+        # activity = 'Dividend'
 
     else:
         print(
