@@ -1,20 +1,19 @@
 
 
-from main import parse_record
+# from main import parse_record
+from import_etrade import parse_record
 
+# TransactionDate,TransactionType,SecurityType,Symbol,Quantity,Amount,Price,Commission,Description
 transactions = [
     ('12/31/21,Dividend,MF,BJBHX,0.854,-7.5,0,0,ABERDEEN GLOBAL HIGH INCOME A ABERDEEN                      REINVEST PRICE $  8.78',
-     {'12/31/21', 'Buy', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A',
-      'ABERDEEN', '0.854', '8.78', '-7.5', '0', 0}),
+     # Date activity invest_type symbol description manager quantity price value fee foreign_tax
+     ('12/31/21', 'Buy', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.854, 8.78, 7.5, 0.0, 0.0)),
     ('12/31/21,Dividend,MF,BJBHX,0.715,-6.28,0,0,ABERDEEN GLOBAL HIGH INCOME A ABERDEEN                      REINVEST PRICE $  8.78',
-     {'12/31/21', 'Buy', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A',
-      'ABERDEEN', '0.854', '8.78', '-7.5', '0', 0}),
+     ('12/31/21', 'Buy', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.715, 8.78, 6.28, 0.0, 0.0)),
     ('12/31/21,Dividend,MF,BJBHX,0,7.5,0,0,ABERDEEN GLOBAL HIGH INCOME A ABERDEEN                      RECORD 12/29/21 PAY 12/31/21  DIVIDEND RATE      0.03782000',
-     {'12/31/21', 'Buy', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A',
-      'ABERDEEN', '0.854', '8.78', '-7.5', '0', 0}),
+     ('12/31/21', 'Dividend', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.0, 7.5, 0.0, 0.0, 0.0)),
     ('12/31/21,Dividend,MF,BJBHX,0,6.28,0,0,ABERDEEN GLOBAL HIGH INCOME A ABERDEEN                      RECORD 12/29/21 PAY 12/31/21  DIVIDEND RATE      0.03165000',
-     {'12/31/21', 'Buy', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A',
-      'ABERDEEN', '0.854', '8.78', '-7.5', '0', 0}),
+     ('12/31/21', 'Dividend', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.0, 6.28, 0.0, 0.0, 0.0)),
     # '12/31/21,Dividend,EQ,CSWC,0,145.5,0,0,CAPITAL SOUTHWEST CORP        CASH DIV  ON     150 SHS      REC 12/15/21 PAY 12/31/21     NON-QUALIFIED DIVIDEND',
     # '12/27/21,Interest,EQ,#2145605,0,0.05,0,0,EXTENDED INSURANCE SWEEP      DEPOSIT ACCOUNT               INTEREST',
     # '12/13/21,Dividend,EQ,MMM,0,35.78,0,0,3M COMPANY                    CASH DIV  ON                  24.17703 SHS                  REC 11/19/21 PAY 12/12/21',
@@ -73,6 +72,6 @@ def doit():
             print(f'Failed at line:\n >{case[0]}<')
             # break
 
-
+    print('All done.')
 # if __name__ == '__main__':
 #     srcFile = "./data/transactions.csv"
