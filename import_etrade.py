@@ -47,8 +47,8 @@ def process_dividend(t):
     sub_act = t[60:].strip()
     price = 0.0
 
-    print(
-        f'instrument: "{instrument}",\n       mgr: "{mgr}"\n    subact: "{sub_act}"')
+    # print(
+    #     f'instrument: "{instrument}",\n       mgr: "{mgr}"\n    subact: "{sub_act}"')
     if sub_act.startswith('REINVEST PRICE $'):
         m = price_exp.search(sub_act)
         if m:

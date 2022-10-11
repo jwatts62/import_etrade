@@ -11,9 +11,9 @@ transactions = [
     ('12/31/21,Dividend,MF,BJBHX,0.715,-6.28,0,0,ABERDEEN GLOBAL HIGH INCOME A ABERDEEN                      REINVEST PRICE $  8.78',
      ('12/31/21', 'Buy', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.715, 8.78, 6.28, 0.0, 0.0)),
     ('12/31/21,Dividend,MF,BJBHX,0,7.5,0,0,ABERDEEN GLOBAL HIGH INCOME A ABERDEEN                      RECORD 12/29/21 PAY 12/31/21  DIVIDEND RATE      0.03782000',
-     ('12/31/21', 'Dividend', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.0, 7.5, 0.0, 0.0, 0.0)),
+     ('12/31/21', 'Dividend', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.0, 0.0, 7.5, 0.0, 0.0)),
     ('12/31/21,Dividend,MF,BJBHX,0,6.28,0,0,ABERDEEN GLOBAL HIGH INCOME A ABERDEEN                      RECORD 12/29/21 PAY 12/31/21  DIVIDEND RATE      0.03165000',
-     ('12/31/21', 'Dividend', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.0, 6.28, 0.0, 0.0, 0.0)),
+     ('12/31/21', 'Dividend', 'MF', 'BJBHX', 'ABERDEEN GLOBAL HIGH INCOME A', 'ABERDEEN', 0.0, 0.0, 6.28, 0.0, 0.0)),
     ('12/31/21,Dividend,EQ,CSWC,0,145.5,0,0,CAPITAL SOUTHWEST CORP        CASH DIV  ON     150 SHS      REC 12/15/21 PAY 12/31/21     NON-QUALIFIED DIVIDEND',
      ('12/31/21', 'Dividend', 'EQ', 'CSWC', 'CAPITAL SOUTHWEST CORP', '', 0.0, 0.0, 145.5, 0.0, 0.0)),
     # '12/27/21,Interest,EQ,#2145605,0,0.05,0,0,EXTENDED INSURANCE SWEEP      DEPOSIT ACCOUNT               INTEREST',
@@ -53,15 +53,19 @@ transactions = [
 
 def doit():
     print('\n<*** doit ***>')
+    is_passing = True
     for case in transactions:
         res = parse_record(case[0])
         if res:
-            print(f'\nInput:\n  >{case[0]}<')
-            print(f'  Parsed/Expected contents:\n  {res}\n  {case[1]}')
+            print(f'\nInput:\n  >{case[0]}<\n'
+                  '     date        action   type     symbol       description               qty price value fee tax\n'
+                  f'  Parsed/Expected contents:\n  {res}\n  {case[1]}')
             # failed = not set(res).isdisjoint(set(case[1]))
-            passed = not len(set(res).difference(case[1]))
+            matches = (res == case[1])
+            is_passing = is_passing and matches
+            # passed = not len(set(res).difference(case[1]))
             # print(f'Passed: {case[1] == res}.')
-            if passed:
+            if matches:
                 print(f'PASSed')
                 # break
 
@@ -73,6 +77,6 @@ def doit():
             print(f'Failed at line:\n >{case[0]}<')
             # break
 
-    print('All done.')
+    print(f'\n\nAll cases passed: {is_passing}\nAll done.')
 # if __name__ == '__main__':
 #     srcFile = "./data/transactions.csv"
