@@ -15,8 +15,15 @@ Transaction records contain:
 
 """
 
-ACTIVITIES = ['Buy', 'Sell', 'Dividend',
-              'Return of Capital', 'Interest', 'Transfer']
+ACTIVITIES = ['Buy',
+              'Sell',
+              'O_Div',      # Ordinary Dividend
+              'Q_Div',      # Qualified Dividend
+              'S_Cap',      # Short term capital gains
+              'L_Cap',      # Long term capital gains
+              'RoC',        # Return of Capital
+              'Int',        # Interest
+              'Xfer']       # Transfer
 
 # EQ = Equity
 # MF = Mutual Fund

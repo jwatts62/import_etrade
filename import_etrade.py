@@ -31,6 +31,22 @@ xactions = {}
 
 price_exp = re.compile('\$\s+((?:\+|\-)?\d+(?:\.\d+)?)')
 
+# CASH DIV  ON                  24.17703 SHS                  REC 11/19/21 PAY 12/12/21
+# CASH DIV  ON                  24.17703 SHS                  REC 11/19/21 PAY 12/12/21
+dividends_0 = re.compile(
+    'CASH DIV  ON\s+(\d+(?:\.\d+)?) SHS\s+REC (\d{2}/\d{2}/\d{2}) PAY (\d{2}/\d{2}/\d{2})')
+
+# CASH DIV  ON      19 SHS
+dividends_1 = re.compile(
+    'CASH DIV  ON\s+(\d+(?:\.\d+)) SHS')
+
+# CASH DIV  ON
+dividends_2 = re.compile('CASH DIV  ON')
+
+# CASH DIV  ON     150 SHS      REC 12/15/21 PAY 12/31/21     NON-QUALIFIED DIVIDEND
+dividends_3 = re.compile(
+    'CASH DIV  ON\s+(\d+(?:\.\d+)?) SHS\s+REC (\d{2}/\d{2}/\d{2}) PAY (\d{2}/\d{2}/\d{2})\s+NON-QUALIFIED DIVIDEND')
+
 
 def process_dividend(t):
     """Process the 'tail' for a record from a 'Dividend' transaction.
@@ -43,12 +59,13 @@ def process_dividend(t):
 
     activity = 'Dividend'
     instrument = t[:30].strip()
-    mgr = t[30:60].strip()
-    sub_act = t[60:].strip()
+    # mgr = t[30:60].strip()
+    sub_act = t[30:].strip()
     price = 0.0
 
-    # print(
-    #     f'instrument: "{instrument}",\n       mgr: "{mgr}"\n    subact: "{sub_act}"')
+    print(
+        f'instrument: "{instrument}",\n    subact: "{sub_act}"')
+    # f'instrument: "{instrument}",\n       mgr: "{mgr}"\n    subact: "{sub_act}"')
     if sub_act.startswith('REINVEST PRICE $'):
         m = price_exp.search(sub_act)
         if m:
@@ -70,16 +87,46 @@ def process_dividend(t):
         # if m:
         #     price = m.group(1)
 
-    elif sub_act.startswith('REC ') and mgr.startswith('CASH DIV  ON '):
-        mgr = ''
-        pass
-        # activity = 'Dividend'
-
     else:
-        print(
-            f'Tail not recognized:\n  {t}\nDesc: {instrument}; mgr: {mgr}; sub_act: {sub_act}.')
+        # Dividend with number of shares, receipt and record dates.
+        m = dividends_0.search(sub_act)
+        if m:
+            print(f'$$$$$$ 0 $$$$$$:\n{m.groups()}')
+            pass
 
-    return (activity, instrument, mgr, sub_act, price)
+        else:
+            # Dividend with number of shares, receipt and record dates.
+            m = dividends_1.search(sub_act)
+            if m:
+                print(f'$$$$$$ 1 $$$$$$:\n{m.groups()}')
+                pass
+
+            else:
+                m = dividends_2.search(sub_act)
+                if m:
+                    print(f'$$$$$$ 2 $$$$$$:\n{m.groups()}')
+                    pass
+
+                else:
+                    m = dividends_3.search(sub_act)
+                    if m:
+                        print(f'$$$$$$ 3 $$$$$$:\n{m.groups()}')
+                        pass
+
+                    else:
+                        print(
+                            f'Tail not recognized:\n  {t}\nDesc: {instrument}; mgr: {mgr}; sub_act: {sub_act}.')
+
+    # elif sub_act.startswith('REC ') and mgr.startswith('CASH DIV  ON '):
+    #     mgr = ''
+    #     pass
+    #     # activity = 'Dividend'
+
+    # else:
+    #     print(
+    #         f'Tail not recognized:\n  {t}\nDesc: {instrument}; mgr: {mgr}; sub_act: {sub_act}.')
+
+    return (activity, instrument, 'mgr', sub_act, price)
 
 
 """A vector of process functions for the various activities.
@@ -233,6 +280,8 @@ def parse_record(rec) -> Tuple:
         #     position_processors[invest_type](
         #         m.group(9), xactions[invest_type][activity])
         if activity in process_activity_vector:
+            t = m.group(9)
+            print(f'Matched:\n  {t}')
             values = process_activity_vector[activity](m.group(9))
             if values:
                 # print(f'Tail: <{values}<')
