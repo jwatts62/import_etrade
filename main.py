@@ -26,8 +26,9 @@ import re
 from pprint import pprint
 
 
-from import_etrade import read_file
-from decoders import Decoders
+# from import_etrade import read
+# from decoders import Decoders
+from reader import read
 
 
 def import_records(src, dec):
@@ -39,7 +40,15 @@ def import_records(src, dec):
 
 if __name__ == '__main__':
     srcFile = "./data/transactions.csv"
-    contents = import_records(srcFile, Decoders.ETRADE)
+    # contents = import_records(srcFile, Decoders.ETRADE)
     # print(f'\n\n\n{contents[0]}; {contents[1]}')
     # pprint(xactions, indent=2)
     # display_partial(contents)
+
+    file_contents = read(srcFile)
+    if file_contents:
+        print('yay')
+        print(f'Read {len(file_contents)} lines from file: "{srcFile}.')
+        
+    else:
+        print('oops')

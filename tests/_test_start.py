@@ -2,6 +2,7 @@
 
 # from main import parse_record
 from import_etrade import parse_record
+from tests.test_reader import test_read
 
 # TransactionDate,TransactionType,SecurityType,Symbol,Quantity,Amount,Price,Commission,Description
 transactions = [
