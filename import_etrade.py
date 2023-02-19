@@ -25,6 +25,8 @@ import re
 
 from pprint import pprint
 
+from decoders import Decoders
+
 # error_context = ''
 
 xactions = {}
@@ -306,8 +308,40 @@ def parse_record(rec) -> Tuple:
     return parsed_fields
 
 
-def read_file(fn) -> Tuple[str, List[str]]:
-    """ Read a file into a list of lines.
+def process_lines(entries):
+    """Given an open input file, read and process the lines."""
+    ln = 0
+    fin = []
+    for entry in entries:
+        entry = entry.strip()
+        ln = ln + 1
+
+        # print(f'  Line {ln}:\n    [{line[:-1]}]')
+        rec = parse_record(entry)
+        if rec:
+            fin.append(rec)
+            print(
+                f'Line: >{entry}<\n         Date, Activity, Type, Symbol, Desc, Mgr, Qty, Price, Value, Fee, tax\nRecord: >{rec}<\n')
+            # print(f'New record:\n  {rec}\nLog:')
+            # pprint(trading_log, indent=2)
+            # print(f'\nFrom line:\n  {line.strip()}\n  New record: {rec}')
+
+        else:
+            print(f'\nERROR *** ERROR *** ERROR\n'
+                  f'Parse failed on line {ln}:\n{entry.strip()}'
+                  f'ERROR *** ERROR *** ERROR\n')
+
+    return fin
+
+
+process_vectors = {Decoders.ETRADE: process_lines,
+                   Decoders.FIDELITY: process_lines}
+
+
+def read_file(fn, dec) -> Tuple[str, List[str]]:
+    """ Read a file exported from eTrade into a list of lines.
+    fn - filename
+    dec - decoder function: f(List[str])
     Returns a tuple containing the account number and a list
     of lines:  (acct_no, trading_log)
     """
@@ -318,8 +352,9 @@ def read_file(fn) -> Tuple[str, List[str]]:
     with open(fn, mode='r', encoding='utf8') as source_file:
         lines = source_file.readlines()
         print(f'Read {len(lines)} lines.')
-        gross_exp = re.compile('####(\\d{4})$')
-        m = gross_exp.search(lines[0])
+
+        acct_no_exp = re.compile('####(\\d{4})$')
+        m = acct_no_exp.search(lines[0])
         if m:
             print(f'Matches:\n  {m}')
             acct_no = m[1]
@@ -330,29 +365,32 @@ def read_file(fn) -> Tuple[str, List[str]]:
                 f'\nERROR\nFailed to extract account number from file header.\n  >{lines[0]}<')
             return (acct_no, lines)
 
-        header = lines[:4]
-        print(f'Header:\n{header}')
+        log_entries = lines[4:]
+        print(f'{log_entries =}')
 
         # trading_log = [()]
-        ln = 0
-        for line in lines[4:]:
-            line = line.strip()
-            ln = ln + 1
+        # ln = 0
+        # for line in lines[4:]:
+        #     line = line.strip()
+        #     ln = ln + 1
 
-            # print(f'  Line {ln}:\n    [{line[:-1]}]')
-            rec = parse_record(line)
-            if rec:
-                trading_log.append(rec)
-                print(
-                    f'Line: >{line}<\n         Date, Activity, Type, Symbol, Desc, Mgr, Qty, Price, Value, Fee, tax\nRecord: >{rec}<\n')
-                # print(f'New record:\n  {rec}\nLog:')
-                # pprint(trading_log, indent=2)
-                # print(f'\nFrom line:\n  {line.strip()}\n  New record: {rec}')
+        #     # print(f'  Line {ln}:\n    [{line[:-1]}]')
+        #     rec = parse_record(line)
+        #     if rec:
+        #         trading_log.append(rec)
+        #         print(
+        #             f'Line: >{line}<\n         Date, Activity, Type, Symbol, Desc, Mgr, Qty, Price, Value, Fee, tax\nRecord: >{rec}<\n')
+        #         # print(f'New record:\n  {rec}\nLog:')
+        #         # pprint(trading_log, indent=2)
+        #         # print(f'\nFrom line:\n  {line.strip()}\n  New record: {rec}')
 
-            else:
-                print(f'\nERROR *** ERROR *** ERROR\n'
-                      f'Parse failed on line {ln}:\n{line.strip()}'
-                      f'ERROR *** ERROR *** ERROR\n')
+        #     else:
+        #         print(f'\nERROR *** ERROR *** ERROR\n'
+        #               f'Parse failed on line {ln}:\n{line.strip()}'
+        #               f'ERROR *** ERROR *** ERROR\n')
+        # (acct_no, trading_log) = process_lines(log_entries)
+        # (acct_no, trading_log) = process_vectors[Decoders.ETRADE](log_entries)
+        (acct_no, trading_log) = process_vectors[dec](log_entries)
 
         return (acct_no, trading_log)
 

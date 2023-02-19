@@ -27,10 +27,19 @@ from pprint import pprint
 
 
 from import_etrade import read_file
+from decoders import Decoders
+
+
+def import_records(src, dec):
+    """Invoke the appropriate decoder to read and import records.
+    """
+    file_contents = read_file(srcFile, dec)
+    return file_contents
+
 
 if __name__ == '__main__':
     srcFile = "./data/transactions.csv"
-    contents = read_file(srcFile)
+    contents = import_records(srcFile, Decoders.ETRADE)
     # print(f'\n\n\n{contents[0]}; {contents[1]}')
     # pprint(xactions, indent=2)
     # display_partial(contents)
