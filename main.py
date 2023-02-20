@@ -21,14 +21,16 @@ Output:
 
 """
 from typing import List, Tuple
-import re
+# import re
+from sys import exit
 
 from pprint import pprint
 
 
 # from import_etrade import read
 # from decoders import Decoders
-from reader import read
+# from reader import read
+from etrade_reader import translate_etrade
 
 
 def import_records(src, dec):
@@ -39,16 +41,42 @@ def import_records(src, dec):
 
 
 if __name__ == '__main__':
-    srcFile = "./data/transactions.csv"
-    # contents = import_records(srcFile, Decoders.ETRADE)
-    # print(f'\n\n\n{contents[0]}; {contents[1]}')
-    # pprint(xactions, indent=2)
-    # display_partial(contents)
+    """Translate an eTrade file.
 
-    file_contents = read(srcFile)
-    if file_contents:
-        print('yay')
-        print(f'Read {len(file_contents)} lines from file: "{srcFile}.')
+    Returns 0 if successful, or False otherwise.
+    """
+
+    srcFile = "./data/transactions.csv"
+    if translate_etrade(srcFile):
+        print('Success')
 
     else:
-        print('oops')
+        print('Failure')
+        exit(255)
+
+    # # Step 1: Read the source file.
+    # srcFile = "./data/transactions.csv"
+    # # contents = import_records(srcFile, Decoders.ETRADE)
+    # # print(f'\n\n\n{contents[0]}; {contents[1]}')
+    # # pprint(xactions, indent=2)
+    # # display_partial(contents)
+
+    # file_contents = read(srcFile)
+    # if file_contents:
+    #     print('yay')
+    #     print(f'Read {len(file_contents)} lines from file: "{srcFile}.')
+
+    # else:
+    #     print('oops')
+    #     exit(255)
+
+    # # Step 2: Read the account number.
+    # acct_no = get_acct_no(file_contents[0])
+    # if acct_no:
+    #     print(f'Read account number: "{acct_no}".')
+
+    # else:
+    #     print(
+    #         f'*** ERROR: {__name__}() =>\n  Failed to retrieve account number from line:\n  "{fn}".')
+
+    exit(0)

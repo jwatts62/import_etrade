@@ -23,6 +23,8 @@ Output:
 import re
 from typing import List, Tuple
 
+from reader import read
+
 
 def strip_header(lines: List[str]) -> Tuple[str, List[str]]:
     """Process lines to extract the account number and provide a 'clean' list of lines without the header.
@@ -42,14 +44,49 @@ def get_acct_no(line: str) -> str:
     acct_no_exp = re.compile('For Account:,####(\\d{4})$')
     m = acct_no_exp.search(line)
     if m:
-        print(f'Found match:\n  {m}')
+        # print(f'Found match:\n  {m}')
         acct_no = m[1]
-        print(f'Account number: {acct_no}')
+        # print(f'Account number: {acct_no}')
 
     else:
         print(
-            f'\nERROR\nFailed to extract account number from file header.\n  >{line}<')
+            f'\nERROR: {__name__}() =>\n'
+            f'  Failed to extract account number from file header.\n  >{line}<')
 
     return acct_no
+
+
+def translate_etrade(srcFile: str) -> bool:
+    """Translate an eTrade file.
+
+    Returns 0 if successful, or False otherwise.
+    """
+
+    # srcFile = "./data/transactions.csv"
+    # contents = import_records(srcFile, Decoders.ETRADE)
+    # print(f'\n\n\n{contents[0]}; {contents[1]}')
+    # pprint(xactions, indent=2)
+    # display_partial(contents)
+
+    # Step 1: Read the source file.
+    file_contents = read(srcFile)
+    if file_contents:
+        # Step 2: Read the account number.
+        acct_no = get_acct_no(file_contents[0])
+        if acct_no:
+            print(f'Read account number: "{acct_no}".')
+            return True
+
+        else:
+            print(
+                f'*** ERROR: {__name__}() =>\n  Failed to retrieve account number from line:\n  "{file_contents[0]}"\n'
+                f'  from file: "{srcFile}".')
+
+    else:
+        print(
+            f'*** ERROR: {__name__}() =>\n'
+            f'  Failed to read contents of file: "{srcFile}".')
+
+    return False
 
 # End of File
