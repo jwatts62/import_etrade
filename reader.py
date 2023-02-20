@@ -13,15 +13,10 @@ def read(fn: str) -> List[str]:
 
     lines = []
 
-    try:
-        with open(fn, mode='r', encoding='utf8') as source_file:
-            for line in source_file:
-                lines.append(line.strip())
+    with open(fn, mode='r', encoding='utf8') as source_file:
+        for line in source_file:
+            lines.append(line.strip())
         # print(f'Read {len(lines)} lines.')
-    except FileNotFoundError:
-        lines = []
-        print(
-            f'*** ERROR: {__name__}("{fn}") => File not found for file named "{fn}".')
 
     return lines
 
