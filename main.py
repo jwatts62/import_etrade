@@ -1,6 +1,6 @@
 #!/bin/python3
 
-"""_summary_
+"""
     Translate an eTrade transaction file to common format.
 
 Input:
@@ -19,7 +19,7 @@ Output:
     platform,account,date,activity,type,symbol,description,quantity,price,cost,fee,foreign tax
     eTrade,2641,12/31/19,Buy,JSPGX,JANUS HENDERSON GLOBAL ALLOCATJANUS HENDERSON,5.834,13.04,-81.33,,,
 
-    """
+"""
 from typing import List, Tuple
 import re
 
