@@ -26,12 +26,12 @@ from typing import List, Tuple
 from reader import read
 
 
-def strip_header(lines: List[str]) -> Tuple[str, List[str]]:
+def strip_header(lines: List[str]) -> List[str]:
     """Process lines to extract the account number and provide a 'clean' list of lines without the header.
 
     Returns a tuple containing the account number and the remaining lines of text.
     """
-    result = ('', lines[4:])
+    result = lines[4:]
     return result
 
 
@@ -68,13 +68,62 @@ def translate_etrade(srcFile: str) -> bool:
     # pprint(xactions, indent=2)
     # display_partial(contents)
 
+    print(f'Processing source file: "{srcFile}".')
     # Step 1: Read the source file.
     file_contents = read(srcFile)
     if file_contents:
+        print(f'  Read {len(file_contents)} lines from file.')
         # Step 2: Read the account number.
         acct_no = get_acct_no(file_contents[0])
         if acct_no:
-            print(f'Read account number: "{acct_no}".')
+            print(f'  Read account number: "{acct_no}".')
+            filtered_contents = strip_header(file_contents)
+            print(f'  Filtered {len(filtered_contents)} entries.')
+            print(f'{"  Line 0:":>12} {filtered_contents[0]}')
+            print(f'  Line [-1]: {filtered_contents[-1]}')
+
+            sorted_contents = filtered_contents
+            sorted_contents.sort()
+            print(f'  Sortered {len(sorted_contents)} entries.')
+            print(f'{"  Line 0:":>12} {sorted_contents[0]}')
+            print(f'  Line [-1]: {sorted_contents[-1]}')
+
+            # Step 3: Tokenize contents.
+            tokenized_contents = []
+            for line in sorted_contents:
+                # print(f'\n  Before split: {len(tokenized_contents)}.')
+                tokens = line.split(',')
+                # print(f'  {tokens = }')
+                tokenized_contents.append(tokens)
+                # print(f'  After split: {len(tokenized_contents)}.')
+
+            # Step 3b Sort on date.
+            print(
+                f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
+            print(f'  Line [-1]: {tokenized_contents[-1]}')
+
+            # Step 3c: Get start and end dates.
+            start_date = tokenized_contents[0][0]
+            end_date = tokenized_contents[-1][0]
+            print(f'\n  Span: {start_date} => {end_date}')
+
+            start_date = start_date.replace('/', '_')
+            end_date = end_date.replace('/', '_')
+            print(f'\n  Span: {start_date} => {end_date}')
+
+
+            # Step 3c: Sort on activity.
+            tokenized_contents.sort(key=lambda row: row[1])
+            print(
+                f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
+            print(f'  Line [-1]: {tokenized_contents[-1]}')
+
+            # Step 4: Save new file:
+            dst_file = acct_no + '-'+ start_date + '-' + end_date + '.csv'
+            with open(dst_file, mode='w', encoding='utf8') as outfile:
+                outfile.write('\n'.join(str(line) for line in tokenized_contents))
+
+            # Step 4: Write new file.
             return True
 
         else:
