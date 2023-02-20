@@ -119,7 +119,8 @@ def translate_etrade(srcFile: str) -> bool:
             print(f'  Line [-1]: {tokenized_contents[-1]}')
 
             # Step 4: Save new file:
-            dst_file = acct_no + '-'+ start_date + '-' + end_date + '.csv'
+            dst_file = f'output/{acct_no}-{start_date}-{end_date}.csv'
+            print(f'  Writing output file: "{dst_file}".')
             with open(dst_file, mode='w', encoding='utf8') as outfile:
                 outfile.write('\n'.join(str(line) for line in tokenized_contents))
 
