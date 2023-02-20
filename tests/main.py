@@ -5,6 +5,7 @@ import unittest
 import sys
 
 from tests.test_reader import test_read
+from tests.test_etrade import test_etrade
 
 
 def main():
