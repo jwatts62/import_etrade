@@ -54,29 +54,4 @@ if __name__ == '__main__':
         print('Failure')
         exit(255)
 
-    # # Step 1: Read the source file.
-    # srcFile = "./data/transactions.csv"
-    # # contents = import_records(srcFile, Decoders.ETRADE)
-    # # print(f'\n\n\n{contents[0]}; {contents[1]}')
-    # # pprint(xactions, indent=2)
-    # # display_partial(contents)
-
-    # file_contents = read(srcFile)
-    # if file_contents:
-    #     print('yay')
-    #     print(f'Read {len(file_contents)} lines from file: "{srcFile}.')
-
-    # else:
-    #     print('oops')
-    #     exit(255)
-
-    # # Step 2: Read the account number.
-    # acct_no = get_acct_no(file_contents[0])
-    # if acct_no:
-    #     print(f'Read account number: "{acct_no}".')
-
-    # else:
-    #     print(
-    #         f'*** ERROR: {__name__}() =>\n  Failed to retrieve account number from line:\n  "{fn}".')
-
     exit(0)
