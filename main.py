@@ -46,7 +46,10 @@ if __name__ == '__main__':
     Returns 0 if successful, or False otherwise.
     """
 
-    srcFile = "./data/transactions.csv"
+    ROOT_FOLDER = './data/'
+    # srcFile = f'{ROOT_FOLDER}transactions.csv'
+    # srcFile = f'{ROOT_FOLDER}2641-Q4-2022.csv'
+    srcFile = f'{ROOT_FOLDER}2641-Q3-2022.csv'
     if translate_etrade(srcFile):
         print('Success')
 
