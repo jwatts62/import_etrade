@@ -1,0 +1,54 @@
+For Account:,####2641
+
+TransactionDate,TransactionType,SecurityType,Symbol,Quantity,Amount,Price,Commission,Description
+
+12/30/22,Dividend,MF,BJBHX,4.725,-33.74,0,0,abrdn Global High Income A    ABERDEEN                      REINVEST PRICE $  7.14
+12/30/22,Dividend,MF,BJBHX,1,-7.14,0,0,abrdn Global High Income A    ABERDEEN                      REINVEST PRICE $  7.14
+12/30/22,Dividend,MF,BJBHX,0,33.74,0,0,abrdn Global High Income A    ABERDEEN                      RECORD 12/28/22 PAY 12/30/22  DIVIDEND RATE      0.16152000
+12/30/22,Dividend,MF,BJBHX,0,7.14,0,0,abrdn Global High Income A    ABERDEEN                      RECORD 12/28/22 PAY 12/30/22  DIVIDEND RATE      0.03419000
+12/30/22,Dividend,EQ,OCSL,37.92743,-261.95,0,0,OAKTREE SPECIALTY LENDING     CORPORATION COMMON STOCK      REIN @   6.9066               REC 12/15/22 PAY 12/30/22
+12/30/22,Dividend,EQ,CSWC,7.76437,-132.77,0,0,CAPITAL SOUTHWEST CORP        REIN @  17.0999               REC 12/15/22 PAY 12/30/22
+12/30/22,Dividend,EQ,OCSL,0,261.95,0,0,OAKTREE SPECIALTY LENDING     CORPORATION COMMON STOCK      CASH DIV  ON                  818.60527 SHS
+12/30/22,Dividend,EQ,CSWC,0,132.77,0,0,CAPITAL SOUTHWEST CORP        CASH DIV  ON                  232.92180 SHS                 REC 12/15/22 PAY 12/30/22
+12/22/22,Dividend,EQ,PDO,12.77731,-164.32,0,0,PIMCO DYNAMIC INCOME          OPPORTUNITIES FD COM          REIN @  12.8603               REC 12/15/22 PAY 12/22/22
+12/22/22,Dividend,EQ,PDO,0,164.32,0,0,PIMCO DYNAMIC INCOME          OPPORTUNITIES FD COM          CASH DIV  ON                  171.16449 SHS
+12/15/22,Dividend,EQ,ORCC,0.82442,-9.95,0,0,OWL ROCK CAPITAL CORPORATION  COMMON STOCK $0.01 PAR VALUE  PER SHARE                     REIN @  12.0690
+12/15/22,Dividend,EQ,ORCC,0,9.95,0,0,OWL ROCK CAPITAL CORPORATION  COMMON STOCK $0.01 PAR VALUE  PER SHARE                     CASH DIV  ON
+12/13/22,Dividend,EQ,SBLK,11.592,-233.37,0,0,***STAR BULK CARRIERS CORP    COM                           REIN @  20.1319               REC 11/30/22 PAY 12/12/22
+12/13/22,Dividend,EQ,SBLK,0,233.37,0,0,***STAR BULK CARRIERS CORP    COM                           CASH DIV  ON                  194.47869 SHS
+12/01/22,Dividend,EQ,PDO,1.46274,-21.7,0,0,PIMCO DYNAMIC INCOME          OPPORTUNITIES FD COM          REIN @  14.8351               REC 11/14/22 PAY 12/01/22
+12/01/22,Dividend,EQ,PDO,0,21.7,0,0,PIMCO DYNAMIC INCOME          OPPORTUNITIES FD COM          CASH DIV  ON                  169.70175 SHS
+11/30/22,Dividend,MF,BJBHX,0.875,-6.42,0,0,abrdn Global High Income A    ABERDEEN                      REINVEST PRICE $  7.34
+11/30/22,Dividend,MF,BJBHX,0,6.42,0,0,abrdn Global High Income A    ABERDEEN                      RECORD 11/28/22 PAY 11/30/22  DIVIDEND RATE      0.03088000
+11/22/22,Dividend,EQ,MPLX,10.58141,-353.87,0,0,MPLX LP                       COM UNIT REPSTG LTD PARTNER   INT                           REIN @  33.4426
+11/22/22,Dividend,EQ,MPLX,0,353.87,0,0,MPLX LP                       COM UNIT REPSTG LTD PARTNER   INT                           DIST      ON
+11/16/22,Dividend,EQ,BTI,0,-0.63,0,0,***BRITISH AMERICAN TOBACCO   PLC SPONSORED ADR             AGENCY PROCESSING FEE
+11/16/22,Dividend,EQ,BTI,2.07074,-80.23,0,0,***BRITISH AMERICAN TOBACCO   PLC SPONSORED ADR             REIN @  38.7446               REC 09/30/22 PAY 11/15/22
+11/16/22,Dividend,EQ,BTI,0,80.86,0,0,***BRITISH AMERICAN TOBACCO   PLC SPONSORED ADR             CASH DIV  ON                  127.22679 SHS
+11/15/22,Dividend,EQ,ORCC,7.53958,-100.47,0,0,OWL ROCK CAPITAL CORPORATION  COMMON STOCK $0.01 PAR VALUE  PER SHARE                     REIN @  13.3256
+11/15/22,Dividend,EQ,ORCC,0,100.47,0,0,OWL ROCK CAPITAL CORPORATION  COMMON STOCK $0.01 PAR VALUE  PER SHARE                     CASH DIV  ON
+11/02/22,Dividend,EQ,LOW,0.11041,-21.19,0,0,LOWES COMPANIES INC           REIN @ 191.9210               REC 10/19/22 PAY 11/02/22
+11/02/22,Dividend,EQ,LOW,0,21.19,0,0,LOWES COMPANIES INC           CASH DIV  ON                  20.17695 SHS                  REC 10/19/22 PAY 11/02/22
+11/01/22,Dividend,EQ,PDO,1.62139,-21.5,0,0,PIMCO DYNAMIC INCOME          OPPORTUNITIES FD COM          REIN @  13.2602               REC 10/13/22 PAY 11/01/22
+11/01/22,Dividend,EQ,PDO,0,21.5,0,0,PIMCO DYNAMIC INCOME          OPPORTUNITIES FD COM          CASH DIV  ON                  168.08036 SHS
+10/31/22,Dividend,MF,BJBHX,0.778,-5.6,0,0,abrdn Global High Income A    ABERDEEN                      REINVEST PRICE $  7.20
+10/31/22,Dividend,MF,BJBHX,0,5.6,0,0,abrdn Global High Income A    ABERDEEN                      RECORD 10/27/22 PAY 10/31/22  DIVIDEND RATE      0.02700000
+10/14/22,Dividend,EQ,WPC,0.21112,-15.05,0,0,W P CAREY INC                 COM                           REIN @  71.2864               REC 09/30/22 PAY 10/14/22
+10/14/22,Dividend,EQ,AFCG,17.11506,-276.92,0,0,AFC GAMMA INC                 COMMON STOCK                  REIN @  16.1799               REC 09/30/22 PAY 10/14/22
+10/14/22,Dividend,EQ,WPC,0,15.05,0,0,W P CAREY INC                 COM                           CASH DIV  ON                  14.18033 SHS
+10/14/22,Dividend,EQ,AFCG,0,276.92,0,0,AFC GAMMA INC                 COMMON STOCK                  CASH DIV  ON                  494.50013 SHS
+10/11/22,Dividend,EQ,MO,1.68595,-74.46,0,0,ALTRIA GROUP INC              REIN @  44.1651               REC 09/15/22 PAY 10/11/22
+10/11/22,Dividend,EQ,MO,0,74.46,0,0,ALTRIA GROUP INC              CASH DIV  ON                  79.21009 SHS                  REC 09/15/22 PAY 10/11/22
+10/06/22,Dividend,EQ,QSR,0.60557,-32.9,0,0,***RESTAURANT BRANDS          INTERNATIONAL INC COM         REIN @  54.3286               REC 09/21/22 PAY 10/05/22
+10/06/22,Dividend,EQ,QSR,0,-5.81,0,0,***RESTAURANT  Foreign Stk W/HINTERNATIONAL INC COM         CASH DIV  ON                  71.68279 SHS
+10/06/22,Dividend,EQ,QSR,0,38.71,0,0,***RESTAURANT BRANDS          INTERNATIONAL INC COM         CASH DIV  ON                  71.68279 SHS
+10/03/22,Dividend,EQ,HQH,5.5096,-97.52,0,0,TEKLA HEALTHCARE INVS         SH BEN INT                    REIN @  17.7000               REC 08/26/22 PAY 09/30/22
+10/03/22,Dividend,EQ,PDO,1.5616,-21.3,0,0,PIMCO DYNAMIC INCOME          OPPORTUNITIES FD COM          REIN @  13.6399               REC 09/12/22 PAY 10/03/22
+10/03/22,Dividend,EQ,PNNT,11.9282,-66.39,0,0,PENNANTPARK INVESTMENT CORP   COMMON STOCK                  REIN @   5.5658               REC 09/19/22 PAY 10/03/22
+10/03/22,Dividend,EQ,HQH,0,97.52,0,0,TEKLA HEALTHCARE INVS         SH BEN INT                    CASH DIV  ON                  243.80173 SHS
+10/03/22,Dividend,EQ,PDO,0,21.3,0,0,PIMCO DYNAMIC INCOME          OPPORTUNITIES FD COM          CASH DIV  ON                  166.51876 SHS
+10/03/22,Dividend,EQ,PNNT,0,66.39,0,0,PENNANTPARK INVESTMENT CORP   COMMON STOCK                  CASH DIV  ON                  442.57646 SHS
+
+
+
+
