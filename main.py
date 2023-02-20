@@ -49,6 +49,6 @@ if __name__ == '__main__':
     if file_contents:
         print('yay')
         print(f'Read {len(file_contents)} lines from file: "{srcFile}.')
-        
+
     else:
         print('oops')
