@@ -15,7 +15,6 @@ def read(fn: str) -> List[str]:
 
     try:
         with open(fn, mode='r', encoding='utf8') as source_file:
-            # lines = source_file.readlines()
             for line in source_file:
                 lines.append(line.strip())
         # print(f'Read {len(lines)} lines.')
