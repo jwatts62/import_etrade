@@ -65,6 +65,56 @@ ACTIONS = {
 }
 
 
+def unpack_dividend(etrade_activity: str, line: List[str]):
+    """Unpack the description field of a Dividend
+    transaction.
+    """
+    # print(f'\n{etrade_activity} - {line}')
+    div_list = line
+
+    tok_0 = line[0:29].strip()
+    # print(f'"{tok_0 = }".')
+
+    tok_1 = line[30:59].strip()
+    # print(f'"{tok_1 = }".')
+
+    tail = line[60:].strip()
+    # print(f'"{tail = }".')
+
+    if tail.startswith('CASH DIV'):
+        print(f'\n{etrade_activity} - {line}')
+        print(f'"{tok_0 = }".')
+        print(f'"{tok_1 = }".')
+        print(f' "{tail = }".')
+        etrade_activity = 'Div'
+
+    # elif tok_1.startswith('CASH DIV'):
+    #     print(f'\n{etrade_activity} - {line}')
+    #     print(f'"{tok_0 = }".')
+    #     print(f'"{tok_1 = }".')
+    #     print(f' "{tail = }".')
+    #     etrade_activity = 'Div'
+
+    elif tail.startswith('REIN @'):
+        etrade_activity = 'DRI'
+
+    elif tok_1.startswith('REIN @'):
+        print(f'### Discarding: "{line}"')
+
+    elif tok_1.startswith('CASH DIV'):
+        print(f'### Discarding: "{line}"')
+
+    else:
+        print(f'\n{etrade_activity} - {line}')
+        print(f'"{tok_0 = }".')
+        print(f'"{tok_1 = }".')
+        print(f' "{tail = }".')
+        print(f'ERROR: unrecognized activity: "{etrade_activity}": "{tail}"')
+        # sys.exit(255)
+
+    return etrade_activity
+
+
 def translate(etrade: List[List[str]]) -> List[List[str]]:
     """Translate a sequence of etrade transactions to gsheet format.
 
@@ -86,6 +136,7 @@ def translate(etrade: List[List[str]]) -> List[List[str]]:
         #     activity = ACTIONS[activity]
         elif activity == 'Dividend':
             # Figure it out.
+            activity = unpack_dividend(activity, input[8])
             activity = 'TBD'
 
         elif activity == 'Sold':
