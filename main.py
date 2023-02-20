@@ -30,7 +30,7 @@ from pprint import pprint
 # from import_etrade import read
 # from decoders import Decoders
 # from reader import read
-from etrade_reader import translate_etrade
+from etrade_reader import translate_etrade_file
 
 
 def import_records(src, dec):
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # srcFile = f'{ROOT_FOLDER}transactions.csv'
     # srcFile = f'{ROOT_FOLDER}2641-Q4-2022.csv'
     srcFile = f'{ROOT_FOLDER}2641-Q3-2022.csv'
-    if translate_etrade(srcFile):
+    if translate_etrade_file(srcFile):
         print('Success')
 
     else:

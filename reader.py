@@ -22,4 +22,14 @@ def read(fn: str) -> List[str]:
 
     return lines
 
+
+def write(acct_no: str, start_date: str, end_date: str, contents: List[List[str]]) -> bool:
+    """Write an output file.
+    """
+    dst_file = f'output/{acct_no}-{start_date}-{end_date}.csv'
+    print(f'  Writing output file: "{dst_file}".')
+    with open(dst_file, mode='w', encoding='utf8') as outfile:
+        outfile.write('\n'.join(str(line)for line in contents))
+
+
 # End of File

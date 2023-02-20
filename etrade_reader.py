@@ -20,10 +20,12 @@ Output:
 
 """
 
+from math import fabs
 import re
+import sys
 from typing import List, Tuple
 
-from reader import read
+from reader import read, write
 
 
 def strip_header(lines: List[str]) -> List[str]:
@@ -56,7 +58,59 @@ def get_acct_no(line: str) -> str:
     return acct_no
 
 
-def translate_etrade(srcFile: str) -> bool:
+ACTIONS = {
+    'Bought': 'Buy',
+    'Dividend': 'Div',
+    'Sold': 'Sell'
+}
+
+
+def translate(etrade: List[List[str]]) -> List[List[str]]:
+    """Translate a sequence of etrade transactions to gsheet format.
+
+    Input:
+        TransactionDate,TransactionType,SecurityType,Symbol,Quantity,Amount,Price,Commission,Description
+
+    Output:
+        TransactionDate,TransactionType,Symbol,Quantity,Price,Amount,Fee
+
+    :param List[List[str]] etrade: Translated etrade transactions
+    """
+
+    gsheet = []
+    for input in etrade:
+        activity = input[1]
+        if activity == 'Bought':
+            activity = 'Buy'
+        # if activity in ACTIONS:
+        #     activity = ACTIONS[activity]
+        elif activity == 'Dividend':
+            # Figure it out.
+            activity = 'TBD'
+
+        elif activity == 'Sold':
+            # Figure it out.
+            activity = 'Sell'
+
+        else:
+            print(f'Failed to process a line: "{input}".')
+            sys.exit(255)
+
+        #   [0]                 [1]             [2]         [3]     [4]     [5]     [6]     [7]         [8]
+        # TransactionDate, TransactionType, SecurityType, Symbol, Quantity, Amount, Price, Commission, Description
+        line = f'{input[0]},{activity},{input[3]},{input[4]},{input[6]},{fabs(float(input[5]))},{input[7]}'
+        print(f'{input}\n{line}')
+        #           Date,   Type, Symbol,     Qty,      Price,      Amount, Fee
+        gsheet.append(line)
+
+        # else:
+        #     print(
+        #         f'Unrecognized activity: "{input[1]}" in line:\n  "{input}".')
+
+    return gsheet
+
+
+def translate_etrade_file(srcFile: str) -> bool:
     """Translate an eTrade file.
 
     Returns 0 if successful, or False otherwise.
@@ -111,18 +165,21 @@ def translate_etrade(srcFile: str) -> bool:
             end_date = end_date.replace('/', '_')
             print(f'\n  Span: {start_date} => {end_date}')
 
-
             # Step 3c: Sort on activity.
             tokenized_contents.sort(key=lambda row: row[1])
             print(
-                f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
+                f'\n  first/last tokens, sorted:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
             print(f'  Line [-1]: {tokenized_contents[-1]}')
 
-            # Step 4: Save new file:
-            dst_file = f'output/{acct_no}-{start_date}-{end_date}.csv'
-            print(f'  Writing output file: "{dst_file}".')
-            with open(dst_file, mode='w', encoding='utf8') as outfile:
-                outfile.write('\n'.join(str(line) for line in tokenized_contents))
+            # Step 4: Translage from etrade to gsheet
+            gsheet = translate(tokenized_contents)
+
+            # Step 5: Save new file:
+            write(acct_no, start_date, end_date, gsheet)
+            # dst_file = f'output/{acct_no}-{start_date}-{end_date}.csv'
+            # print(f'  Writing output file: "{dst_file}".')
+            # with open(dst_file, mode='w', encoding='utf8') as outfile:
+            #     outfile.write('\n'.join(str(line) for line in tokenized_contents))
 
             # Step 4: Write new file.
             return True
