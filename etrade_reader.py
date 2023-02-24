@@ -23,9 +23,10 @@ Output:
 from math import fabs
 import re
 import sys
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
-from reader import read, write
+from reader import read, recordSymbol, write
+
 
 
 def strip_header(lines: List[str]) -> List[str]:
@@ -65,7 +66,7 @@ ACTIONS = {
 }
 
 
-def unpack_dividend(etrade_activity: str, line: List[str]):
+def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dict[str, str]):
     """Unpack the description field of a Dividend
     transaction.
     """
@@ -82,11 +83,12 @@ def unpack_dividend(etrade_activity: str, line: List[str]):
     # print(f'"{tail = }".')
 
     if tail.startswith('CASH DIV'):
-        print(f'\n{etrade_activity} - {line}')
-        print(f'"{tok_0 = }".')
-        print(f'"{tok_1 = }".')
-        print(f' "{tail = }".')
+        # print(f'\n{etrade_activity} - {line}')
+        # print(f'"{tok_0 = }".')
+        # print(f'"{tok_1 = }".')
+        # print(f' "{tail = }".')
         etrade_activity = 'Div'
+        recordSymbol(symbol, tok_0, crossRef)
 
     # elif tok_1.startswith('CASH DIV'):
     #     print(f'\n{etrade_activity} - {line}')
@@ -96,7 +98,8 @@ def unpack_dividend(etrade_activity: str, line: List[str]):
     #     etrade_activity = 'Div'
 
     elif tail.startswith('REIN @'):
-        etrade_activity = 'DRI'
+        etrade_activity = 'Buy'
+        recordSymbol(symbol, tok_0, crossRef)
 
     elif tok_1.startswith('REIN @'):
         print(f'### Discarding: "{line}"')
@@ -104,18 +107,36 @@ def unpack_dividend(etrade_activity: str, line: List[str]):
     elif tok_1.startswith('CASH DIV'):
         print(f'### Discarding: "{line}"')
 
+    elif tail.startswith('PRE SHARE'):
+        etrade_activity = 'Buy'
+
+    elif tail.startswith('REINVEST PRICE $'):
+        etrade_activity = 'Buy'
+        recordSymbol(symbol, tok_0, crossRef)
+
+    elif tail.startswith('RECORD ') or tail.startswith('PER SHARE'):
+        etrade_activity = 'Div'
+        recordSymbol(symbol, tok_0, crossRef)
+
+    elif tail.startswith('AGENCY PROCESSING FEE'):
+        etrade_activity = 'Fee'
+
+    elif tail.startswith('INT '):
+        etrade_activity = 'Int'
+        recordSymbol(symbol, tok_0, crossRef)
+
     else:
-        print(f'\n{etrade_activity} - {line}')
-        print(f'"{tok_0 = }".')
-        print(f'"{tok_1 = }".')
-        print(f' "{tail = }".')
-        print(f'ERROR: unrecognized activity: "{etrade_activity}": "{tail}"')
+        print(f'\n*** ERROR: unrecognized activity: "{etrade_activity}": "{tail}"\n'
+              f'    {etrade_activity} - "{line}"\n'
+              f'    {tok_0 = }.\n'
+              f'    {tok_1 = }.\n'
+              f'     {tail = }.\n')
         # sys.exit(255)
 
     return etrade_activity
 
 
-def translate(etrade: List[List[str]]) -> List[List[str]]:
+def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[str]]:
     """Translate a sequence of etrade transactions to gsheet format.
 
     Input:
@@ -132,12 +153,16 @@ def translate(etrade: List[List[str]]) -> List[List[str]]:
         activity = input[1]
         if activity == 'Bought':
             activity = 'Buy'
-        # if activity in ACTIONS:
-        #     activity = ACTIONS[activity]
+            recordSymbol(input[3], input[8][0:29].strip(), crossRef)
+            # if not symbol in crossRef:
+            #     name = input[8][0:29].strip()
+            #     crossRef[symbol] = name
+            #     print(f'Symbol: "{symbol}: {name}.')
+
         elif activity == 'Dividend':
             # Figure it out.
-            activity = unpack_dividend(activity, input[8])
-            activity = 'TBD'
+            activity = unpack_dividend(input[3], activity, input[8], crossRef)
+            # activity = 'TBD'
 
         elif activity == 'Sold':
             # Figure it out.
@@ -150,7 +175,7 @@ def translate(etrade: List[List[str]]) -> List[List[str]]:
         #   [0]                 [1]             [2]         [3]     [4]     [5]     [6]     [7]         [8]
         # TransactionDate, TransactionType, SecurityType, Symbol, Quantity, Amount, Price, Commission, Description
         line = f'{input[0]},{activity},{input[3]},{input[4]},{input[6]},{fabs(float(input[5]))},{input[7]}'
-        print(f'{input}\n{line}')
+        # print(f'{input}\n{line}')
         #           Date,   Type, Symbol,     Qty,      Price,      Amount, Fee
         gsheet.append(line)
 
@@ -161,8 +186,11 @@ def translate(etrade: List[List[str]]) -> List[List[str]]:
     return gsheet
 
 
-def translate_etrade_file(srcFile: str) -> bool:
+def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
     """Translate an eTrade file.
+
+    param srcFile - Path + name of source file;
+    param crossRef - A dictionary of symbols and names.
 
     Returns 0 if successful, or False otherwise.
     """
@@ -183,15 +211,15 @@ def translate_etrade_file(srcFile: str) -> bool:
         if acct_no:
             print(f'  Read account number: "{acct_no}".')
             filtered_contents = strip_header(file_contents)
-            print(f'  Filtered {len(filtered_contents)} entries.')
-            print(f'{"  Line 0:":>12} {filtered_contents[0]}')
-            print(f'  Line [-1]: {filtered_contents[-1]}')
+            # print(f'  Filtered {len(filtered_contents)} entries.')
+            # print(f'{"  Line 0:":>12} {filtered_contents[0]}')
+            # print(f'  Line [-1]: {filtered_contents[-1]}')
 
             sorted_contents = filtered_contents
             sorted_contents.sort()
-            print(f'  Sortered {len(sorted_contents)} entries.')
-            print(f'{"  Line 0:":>12} {sorted_contents[0]}')
-            print(f'  Line [-1]: {sorted_contents[-1]}')
+            # print(f'  Sortered {len(sorted_contents)} entries.')
+            # print(f'{"  Line 0:":>12} {sorted_contents[0]}')
+            # print(f'  Line [-1]: {sorted_contents[-1]}')
 
             # Step 3: Tokenize contents.
             tokenized_contents = []
@@ -203,6 +231,7 @@ def translate_etrade_file(srcFile: str) -> bool:
                 # print(f'  After split: {len(tokenized_contents)}.')
 
             # Step 3b Sort on date.
+            tokenized_contents.sort(key=lambda row: row[0])
             print(
                 f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
             print(f'  Line [-1]: {tokenized_contents[-1]}')
@@ -212,18 +241,17 @@ def translate_etrade_file(srcFile: str) -> bool:
             end_date = tokenized_contents[-1][0]
             print(f'\n  Span: {start_date} => {end_date}')
 
-            start_date = start_date.replace('/', '_')
-            end_date = end_date.replace('/', '_')
-            print(f'\n  Span: {start_date} => {end_date}')
+            # # Step 3c: Sort on activity.
+            # # tokenized_contents.sort(key=lambda row: row[1])
+            # print(
+            #     f'\n  first/last tokens, sorted:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
+            # print(f'  Line [-1]: {tokenized_contents[-1]}')
+            # start_date = tokenized_contents[0][0]
+            # end_date = tokenized_contents[-1][0]
+            # print(f'\n  Span: {start_date} => {end_date}')
 
-            # Step 3c: Sort on activity.
-            tokenized_contents.sort(key=lambda row: row[1])
-            print(
-                f'\n  first/last tokens, sorted:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
-            print(f'  Line [-1]: {tokenized_contents[-1]}')
-
-            # Step 4: Translage from etrade to gsheet
-            gsheet = translate(tokenized_contents)
+            # Step 4: Translate from etrade to gsheet.
+            gsheet = translate(tokenized_contents, crossRef)
 
             # Step 5: Save new file:
             write(acct_no, start_date, end_date, gsheet)

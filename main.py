@@ -50,7 +50,9 @@ if __name__ == '__main__':
     # srcFile = f'{ROOT_FOLDER}transactions.csv'
     # srcFile = f'{ROOT_FOLDER}2641-Q4-2022.csv'
     srcFile = f'{ROOT_FOLDER}2641-Q3-2022.csv'
-    if translate_etrade_file(srcFile):
+    xRef = dict()
+    if translate_etrade_file(srcFile, xRef):
+        pprint(xRef)
         print('Success')
 
     else:
