@@ -28,7 +28,6 @@ from typing import Dict, List, Tuple
 from reader import read, recordSymbol, write
 
 
-
 def strip_header(lines: List[str]) -> List[str]:
     """Process lines to extract the account number and provide a 'clean' list of lines without the header.
 
@@ -65,6 +64,9 @@ ACTIONS = {
     'Sold': 'Sell'
 }
 
+# Regular expression used to extract Reinvestment price.
+reinvestmentPrice = '.*REIN @\s+(\d+.?\d+).*'
+
 
 def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dict[str, str]):
     """Unpack the description field of a Dividend
@@ -99,6 +101,11 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
 
     elif tail.startswith('REIN @'):
         etrade_activity = 'Buy'
+        # m = re.match(reinvestmentPrice, tail)
+        # if m:
+        #     print(f'Matched: {m.group(1)})
+
+        # Price in token.
         recordSymbol(symbol, tok_0, crossRef)
 
     elif tok_1.startswith('REIN @'):
@@ -143,6 +150,7 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
         TransactionDate,TransactionType,SecurityType,Symbol,Quantity,Amount,Price,Commission,Description
 
     Output:
+            0               1           2        3      4       5     6
         TransactionDate,TransactionType,Symbol,Quantity,Price,Amount,Fee
 
     :param List[List[str]] etrade: Translated etrade transactions
@@ -150,7 +158,23 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
 
     gsheet = []
     for input in etrade:
+
+        date = input[0]
         activity = input[1]
+        securityType = input[2]
+        symbol = input[3]
+        quantity = float(input[4])
+        amount = fabs(float(input[5]))
+        price = fabs(float(input[6]))
+        fees = fabs(float(input[7]))
+        description = input[8]
+        #  = input[]
+
+        # #   [0]                 [1]             [2]         [3]     [4]     [5]     [6]     [7]         [8]
+        # # TransactionDate, TransactionType, SecurityType, Symbol, Quantity, Amount, Price, Commission, Description
+        # line = f'{input[0]},{activity},{input[3]},{input[4]},{input[6]},{fabs(float(input[5]))},{fabs(float(input[6]))},{input[7]},{input[8]}'
+        # print(f'\n{line}')
+
         if activity == 'Bought':
             activity = 'Buy'
             recordSymbol(input[3], input[8][0:29].strip(), crossRef)
@@ -162,6 +186,13 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
         elif activity == 'Dividend':
             # Figure it out.
             activity = unpack_dividend(input[3], activity, input[8], crossRef)
+            if activity == 'Buy':
+                # See if we have a reinvestment price.
+                m = re.match(reinvestmentPrice, input[8])
+                if m:
+                    print(f'Matched: {m.group(1)}')
+                    price = fabs(float(m.group(1)))
+
             # activity = 'TBD'
 
         elif activity == 'Sold':
@@ -172,10 +203,10 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
             print(f'Failed to process a line: "{input}".')
             sys.exit(255)
 
-        #   [0]                 [1]             [2]         [3]     [4]     [5]     [6]     [7]         [8]
-        # TransactionDate, TransactionType, SecurityType, Symbol, Quantity, Amount, Price, Commission, Description
-        line = f'{input[0]},{activity},{input[3]},{input[4]},{input[6]},{fabs(float(input[5]))},{input[7]}'
-        # print(f'{input}\n{line}')
+        # #   [0]                 [1]             [2]         [3]     [4]     [5]     [6]     [7]         [8]
+        # # TransactionDate, TransactionType, SecurityType, Symbol, Quantity, Amount, Price, Commission, Description
+        line = f'{date},{activity},{symbol},{quantity},{amount},{price},{fees},{description}'
+        print(f'{input}\n{line}')
         #           Date,   Type, Symbol,     Qty,      Price,      Amount, Fee
         gsheet.append(line)
 
