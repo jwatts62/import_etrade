@@ -20,10 +20,11 @@ Output:
     eTrade,2641,12/31/19,Buy,JSPGX,JANUS HENDERSON GLOBAL ALLOCATJANUS HENDERSON,5.834,13.04,-81.33,,,
 
     """
-from typing import List, Tuple
-import re
-
+from math import fabs
 from pprint import pprint
+import re
+from typing import List, Tuple
+
 
 from decoders import Decoders
 
@@ -268,25 +269,22 @@ def parse_record(rec) -> Tuple:
         invest_type = m.group(3).strip()
         symbol = m.group(4).strip()
         quantity = float(m.group(5).strip())
-        value = abs(float(m.group(6).strip()))
+        value = fabs(float(m.group(6).strip()))
         fee = float(m.group(7).strip())
 
-        if not invest_type in xactions:
+        if invest_type not in xactions:
             xactions[invest_type] = {}
 
-        if not activity in xactions[invest_type]:
+        if activity not in xactions[invest_type]:
             xactions[invest_type][activity] = []
 
         xactions[invest_type][activity].append(m.group(9))
-        # if activity in xactions[invest_type]:
-        #     position_processors[invest_type](
-        #         m.group(9), xactions[invest_type][activity])
+
         if activity in process_activity_vector:
             t = m.group(9)
             print(f'Matched:\n  {t}')
             values = process_activity_vector[activity](m.group(9))
             if values:
-                # print(f'Tail: <{values}<')
                 activity = values[0]
                 description = values[1]
                 manager = values[2]
@@ -298,8 +296,7 @@ def parse_record(rec) -> Tuple:
         error_context += (f'\n>>>{description}<\n')
 
     else:
-        print(f'Failed to match gross expression.')
-        print(error_context)
+        print(f'Failed to match gross expression.:\n  {error_context}')
         return parsed_fields
 
     parsed_fields = (date, activity, invest_type, symbol, description,

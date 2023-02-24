@@ -205,8 +205,8 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
 
         # #   [0]                 [1]             [2]         [3]     [4]     [5]     [6]     [7]         [8]
         # # TransactionDate, TransactionType, SecurityType, Symbol, Quantity, Amount, Price, Commission, Description
-        line = f'{date},{activity},{symbol},{quantity},{amount},{price},{fees},{description}'
-        print(f'{input}\n{line}')
+        line = f'{date},{activity},{symbol},{quantity},{price},{amount},{fees},{description}'
+        print(f'\n{input}\n{line}')
         #           Date,   Type, Symbol,     Qty,      Price,      Amount, Fee
         gsheet.append(line)
 
