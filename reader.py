@@ -42,4 +42,17 @@ def write(acct_no: str, start_date: str, end_date: str, contents: List[List[str]
         outfile.write('\n'.join(str(line)for line in contents))
 
 
+def write_xref(xref):
+    """
+    Write a cross-reference file.
+
+    :param _type_ xref: _description_
+    """
+
+    o_file = 'output/cross-reference.csv'
+    with open(o_file, 'w') as f:
+        for symbol, desc in xref.items():
+            f.write(f'{symbol},{desc}\n')
+
+
 # End of File

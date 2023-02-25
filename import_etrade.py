@@ -335,7 +335,7 @@ process_vectors = {Decoders.ETRADE: process_lines,
                    Decoders.FIDELITY: process_lines}
 
 
-def read_file(fn, dec) -> Tuple[str, List[str]]:
+def read_file(fn: str, dec) -> Tuple[str, List[str]]:
     """ Read a file exported from eTrade into a list of lines.
     fn - filename
     dec - decoder function: f(List[str])

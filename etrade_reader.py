@@ -25,7 +25,7 @@ import re
 import sys
 from typing import Dict, List, Tuple
 
-from reader import read, recordSymbol, write
+from reader import read, recordSymbol, write, write_xref
 
 
 def strip_header(lines: List[str]) -> List[str]:
@@ -286,6 +286,7 @@ def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
 
             # Step 5: Save new file:
             write(acct_no, start_date, end_date, gsheet)
+            write_xref(crossRef)
             # dst_file = f'output/{acct_no}-{start_date}-{end_date}.csv'
             # print(f'  Writing output file: "{dst_file}".')
             # with open(dst_file, mode='w', encoding='utf8') as outfile:
