@@ -61,7 +61,8 @@ def get_acct_no(line: str) -> str:
 ACTIONS = {
     'Bought': 'Buy',
     'Dividend': 'Div',
-    'Sold': 'Sell'
+    'Sold': 'Sell',
+    'Int': 'Div'
 }
 
 # Regular expression used to extract Reinvestment price.
@@ -84,11 +85,7 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
     tail = line[60:].strip()
     print(f'"{tail = }".')
 
-    if tail.startswith('CASH DIV'):
-        # print(f'\n{etrade_activity} - {line}')
-        # print(f'"{tok_0 = }".')
-        # print(f'"{tok_1 = }".')
-        # print(f' "{tail = }".')
+    if tail.startswith('CASH DIV') or (tail.startswith('INT ') and 'REIN @' not in tail):
         etrade_activity = 'Div'
         if 'Foreign Stk W/H' not in tok_0:
             recordSymbol(symbol, tok_0, crossRef)
@@ -99,30 +96,25 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
     #     print(f'"{tok_1 = }".')
     #     print(f' "{tail = }".')
     #     etrade_activity = 'Div'
+# 08/12/22, Dividend, EQ, MPLX, 3.3425, -108.05, 0, 0, MPLX LP                       COM UNIT REPSTG LTD PARTNER   INT                           REIN @  32.3260
+# 08/12/22, Dividend, EQ, MPLX, 0,       108.05, 0, 0, MPLX LP                       COM UNIT REPSTG LTD PARTNER   INT                           DIST      ON
 
-    elif tail.startswith('REIN @'):
+    elif tail.startswith('REIN @') or tail.startswith('REINVEST PRICE $') or (tail.startswith('INT ') and 'REIN @' in tail):
         etrade_activity = 'Buy'
-        # m = re.match(reinvestmentPrice, tail)
-        # if m:
-        #     print(f'Matched: {m.group(1)})
-
-        # Price in token.
         recordSymbol(symbol, tok_0, crossRef)
 
-    elif tok_1.startswith('REIN @'):
+    elif tok_1.startswith('REIN @') or tail.startswith('PRE SHARE'):
         etrade_activity = 'Buy'
-        # print(f'### Discarding: "{line}"')
 
     elif tok_1.startswith('CASH DIV'):
         etrade_activity = 'Div'
-        # print(f'### Discarding: "{line}"')
 
-    elif tail.startswith('PRE SHARE'):
-        etrade_activity = 'Buy'
+    # elif tail.startswith('PRE SHARE'):
+    #     etrade_activity = 'Buy'
 
-    elif tail.startswith('REINVEST PRICE $'):
-        etrade_activity = 'Buy'
-        recordSymbol(symbol, tok_0, crossRef)
+    # elif tail.startswith('REINVEST PRICE $'):
+    #     etrade_activity = 'Buy'
+    #     recordSymbol(symbol, tok_0, crossRef)
 
     elif tail.startswith('RECORD ') or tail.startswith('PER SHARE'):
         etrade_activity = 'Div'
@@ -131,9 +123,9 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
     elif tail.startswith('AGENCY PROCESSING FEE'):
         etrade_activity = 'Fee'
 
-    elif tail.startswith('INT '):
-        etrade_activity = 'Int'
-        recordSymbol(symbol, tok_0, crossRef)
+    # elif tail.startswith('INT '):
+    #     etrade_activity = 'Int'
+    #     recordSymbol(symbol, tok_0, crossRef)
 
     else:
         print(f'\n*** ERROR: unrecognized activity: "{etrade_activity}": "{tail}"\n'
@@ -180,22 +172,18 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
 
         if activity == 'Bought':
             activity = 'Buy'
-            recordSymbol(input[3], input[8][0:29].strip(), crossRef)
-            # if not symbol in crossRef:
-            #     name = input[8][0:29].strip()
-            #     crossRef[symbol] = name
-            #     print(f'Symbol: "{symbol}: {name}.')
+            recordSymbol(symbol, description[0:30].strip(), crossRef)
 
-        elif activity == 'Dividend':
+        elif activity == 'Dividend' or activity == 'Int':
             # Figure it out.
-            activity = unpack_dividend(input[3], activity, input[8], crossRef)
+            activity = unpack_dividend(symbol, activity, description, crossRef)
             if activity == 'Buy':
+                amount = fabs(amount)
                 # See if we have a reinvestment price.
                 m = re.match(reinvestmentPrice, input[8])
                 if m:
-                    print(f'Matched: {m.group(1)}')
+                    # print(f'Matched: {m.group(1)}')
                     price = fabs(float(m.group(1)))
-                    amount = fabs(amount)
 
             elif activity == 'Div':
                 if amount < 0.0:
@@ -257,14 +245,14 @@ def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
 
             # Step 3b Sort on date.
             tokenized_contents.sort(key=lambda row: row[0])
-            print(
-                f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
-            print(f'  {"  Line [-1]:":>12} {tokenized_contents[-1]}')
+            # print(
+            #     f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
+            # print(f'  {"  Line [-1]:":>12} {tokenized_contents[-1]}')
 
             # Step 3c: Get start and end dates.
             start_date = tokenized_contents[0][0]
             end_date = tokenized_contents[-1][0]
-            print(f'\n  Span: {start_date} => {end_date}')
+            # print(f'\n  Span: {start_date} => {end_date}')
 
             # Step 4: Translate from etrade to gsheet.
             gsheet = translate(tokenized_contents, crossRef)
