@@ -82,7 +82,7 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
     print(f'>>> "{tok_1 = }".')
 
     tail = line[60:].strip()
-    # print(f'"{tail = }".')
+    print(f'"{tail = }".')
 
     if tail.startswith('CASH DIV'):
         # print(f'\n{etrade_activity} - {line}')
@@ -110,10 +110,12 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
         recordSymbol(symbol, tok_0, crossRef)
 
     elif tok_1.startswith('REIN @'):
-        print(f'### Discarding: "{line}"')
+        etrade_activity = 'Buy'
+        # print(f'### Discarding: "{line}"')
 
     elif tok_1.startswith('CASH DIV'):
-        print(f'### Discarding: "{line}"')
+        etrade_activity = 'Div'
+        # print(f'### Discarding: "{line}"')
 
     elif tail.startswith('PRE SHARE'):
         etrade_activity = 'Buy'
@@ -193,6 +195,7 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
                 if m:
                     print(f'Matched: {m.group(1)}')
                     price = fabs(float(m.group(1)))
+                    amount = fabs(amount)
 
             elif activity == 'Div':
                 if amount < 0.0:
