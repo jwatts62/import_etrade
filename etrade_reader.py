@@ -75,11 +75,11 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
     # print(f'\n{etrade_activity} - {line}')
     div_list = line
 
-    tok_0 = line[0:29].strip()
-    # print(f'"{tok_0 = }".')
+    tok_0 = line[0:30].strip()
+    print(f'>>> "{tok_0 = }".')
 
     tok_1 = line[30:59].strip()
-    # print(f'"{tok_1 = }".')
+    print(f'>>> "{tok_1 = }".')
 
     tail = line[60:].strip()
     # print(f'"{tail = }".')
@@ -90,7 +90,8 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
         # print(f'"{tok_1 = }".')
         # print(f' "{tail = }".')
         etrade_activity = 'Div'
-        recordSymbol(symbol, tok_0, crossRef)
+        if 'Foreign Stk W/H' not in tok_0:
+            recordSymbol(symbol, tok_0, crossRef)
 
     # elif tok_1.startswith('CASH DIV'):
     #     print(f'\n{etrade_activity} - {line}')
@@ -164,7 +165,7 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
         securityType = input[2]
         symbol = input[3]
         quantity = float(input[4])
-        amount = fabs(float(input[5]))
+        amount = float(input[5])
         price = fabs(float(input[6]))
         fees = fabs(float(input[7]))
         description = input[8]
@@ -193,6 +194,11 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
                     print(f'Matched: {m.group(1)}')
                     price = fabs(float(m.group(1)))
 
+            elif activity == 'Div':
+                if amount < 0.0:
+                    # Must be fees/taxes.
+                    fees = amount
+                    amount = 0.0
             # activity = 'TBD'
 
         elif activity == 'Sold':
@@ -226,12 +232,6 @@ def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
     Returns 0 if successful, or False otherwise.
     """
 
-    # srcFile = "./data/transactions.csv"
-    # contents = import_records(srcFile, Decoders.ETRADE)
-    # print(f'\n\n\n{contents[0]}; {contents[1]}')
-    # pprint(xactions, indent=2)
-    # display_partial(contents)
-
     print(f'Processing source file: "{srcFile}".')
     # Step 1: Read the source file.
     file_contents = read(srcFile)
@@ -242,44 +242,26 @@ def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
         if acct_no:
             print(f'  Read account number: "{acct_no}".')
             filtered_contents = strip_header(file_contents)
-            # print(f'  Filtered {len(filtered_contents)} entries.')
-            # print(f'{"  Line 0:":>12} {filtered_contents[0]}')
-            # print(f'  Line [-1]: {filtered_contents[-1]}')
 
             sorted_contents = filtered_contents
             sorted_contents.sort()
-            # print(f'  Sortered {len(sorted_contents)} entries.')
-            # print(f'{"  Line 0:":>12} {sorted_contents[0]}')
-            # print(f'  Line [-1]: {sorted_contents[-1]}')
 
             # Step 3: Tokenize contents.
             tokenized_contents = []
             for line in sorted_contents:
-                # print(f'\n  Before split: {len(tokenized_contents)}.')
                 tokens = line.split(',')
-                # print(f'  {tokens = }')
                 tokenized_contents.append(tokens)
-                # print(f'  After split: {len(tokenized_contents)}.')
 
             # Step 3b Sort on date.
             tokenized_contents.sort(key=lambda row: row[0])
             print(
                 f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
-            print(f'  Line [-1]: {tokenized_contents[-1]}')
+            print(f'  {"  Line [-1]:":>12} {tokenized_contents[-1]}')
 
             # Step 3c: Get start and end dates.
             start_date = tokenized_contents[0][0]
             end_date = tokenized_contents[-1][0]
             print(f'\n  Span: {start_date} => {end_date}')
-
-            # # Step 3c: Sort on activity.
-            # # tokenized_contents.sort(key=lambda row: row[1])
-            # print(
-            #     f'\n  first/last tokens, sorted:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
-            # print(f'  Line [-1]: {tokenized_contents[-1]}')
-            # start_date = tokenized_contents[0][0]
-            # end_date = tokenized_contents[-1][0]
-            # print(f'\n  Span: {start_date} => {end_date}')
 
             # Step 4: Translate from etrade to gsheet.
             gsheet = translate(tokenized_contents, crossRef)
@@ -287,10 +269,6 @@ def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
             # Step 5: Save new file:
             write(acct_no, start_date, end_date, gsheet)
             write_xref(crossRef)
-            # dst_file = f'output/{acct_no}-{start_date}-{end_date}.csv'
-            # print(f'  Writing output file: "{dst_file}".')
-            # with open(dst_file, mode='w', encoding='utf8') as outfile:
-            #     outfile.write('\n'.join(str(line) for line in tokenized_contents))
 
             # Step 4: Write new file.
             return True
