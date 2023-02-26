@@ -197,7 +197,7 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
             elif activity == 'Div':
                 if amount < 0.0:
                     # Must be fees/taxes.
-                    fees = amount
+                    fees = fabs(amount)
                     amount = 0.0
             # activity = 'TBD'
 
