@@ -54,8 +54,9 @@ def get_acct_no(line: str) -> str:
 
     else:
         print(
-            f'\nERROR: {__name__}() =>\n'
-            f'  Failed to extract account number from file header.\n  >{line}<')
+            f'\n{"#"*32}\nERROR: {__name__}()= >\n'
+            f'  Failed to extract account number from file header.\n  >{line}<'
+            f'\n'{"#"*32}\n')
 
     return acct_no
 
@@ -79,13 +80,13 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
     div_list = line
 
     tok_0 = line[0:30].strip()
-    print(f'>>> "{tok_0 = }".')
+    # print(f'>>> "{tok_0 = }".')
 
     tok_1 = line[30:59].strip()
-    print(f'>>> "{tok_1 = }".')
+    # print(f'>>> "{tok_1 = }".')
 
     tail = line[60:].strip()
-    print(f'"{tail = }".')
+    # print(f'"{tail = }".')
 
     if tail.startswith('CASH DIV') or (tail.startswith('INT ') and 'REIN @' not in tail):
         etrade_activity = 'Div'
@@ -114,11 +115,12 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
     #     recordSymbol(symbol, tok_0, crossRef)
 
     else:
-        print(f'\n*** ERROR: unrecognized activity: "{etrade_activity}": "{tail}"\n'
+        print(f'\n{"#"*32}\n*** ERROR: unrecognized activity: "{etrade_activity}": "{tail}"\n'
               f'    {etrade_activity} - "{line}"\n'
               f'    {tok_0 = }.\n'
               f'    {tok_1 = }.\n'
-              f'     {tail = }.\n')
+              f'     {tail = }.\n'
+              f'{"#"*32}\n')
         # sys.exit(255)
 
     return etrade_activity
