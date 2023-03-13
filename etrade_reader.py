@@ -22,6 +22,8 @@ Output:
 
 from math import fabs
 import re
+from pathlib import Path
+from pprint import pprint
 import sys
 from typing import Dict, List, Tuple
 
@@ -33,7 +35,7 @@ def strip_header(lines: List[str]) -> List[str]:
 
     Returns a tuple containing the account number and the remaining lines of text.
     """
-    result = lines[4:]
+    result = lines[2:]
     return result
 
 
@@ -90,15 +92,6 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
         if 'Foreign Stk W/H' not in tok_0:
             recordSymbol(symbol, tok_0, crossRef)
 
-    # elif tok_1.startswith('CASH DIV'):
-    #     print(f'\n{etrade_activity} - {line}')
-    #     print(f'"{tok_0 = }".')
-    #     print(f'"{tok_1 = }".')
-    #     print(f' "{tail = }".')
-    #     etrade_activity = 'Div'
-# 08/12/22, Dividend, EQ, MPLX, 3.3425, -108.05, 0, 0, MPLX LP                       COM UNIT REPSTG LTD PARTNER   INT                           REIN @  32.3260
-# 08/12/22, Dividend, EQ, MPLX, 0,       108.05, 0, 0, MPLX LP                       COM UNIT REPSTG LTD PARTNER   INT                           DIST      ON
-
     elif tail.startswith('REIN @') or tail.startswith('REINVEST PRICE $') or (tail.startswith('INT ') and 'REIN @' in tail):
         etrade_activity = 'Buy'
         recordSymbol(symbol, tok_0, crossRef)
@@ -108,13 +101,6 @@ def unpack_dividend(symbol, etrade_activity: str, line: List[str], crossRef: Dic
 
     elif tok_1.startswith('CASH DIV'):
         etrade_activity = 'Div'
-
-    # elif tail.startswith('PRE SHARE'):
-    #     etrade_activity = 'Buy'
-
-    # elif tail.startswith('REINVEST PRICE $'):
-    #     etrade_activity = 'Buy'
-    #     recordSymbol(symbol, tok_0, crossRef)
 
     elif tail.startswith('RECORD ') or tail.startswith('PER SHARE'):
         etrade_activity = 'Div'
@@ -153,7 +139,6 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
 
     gsheet = []
     for input in etrade:
-
         date = input[0]
         activity = input[1]
         securityType = input[2]
@@ -197,8 +182,9 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
             activity = 'Sell'
 
         else:
-            print(f'Failed to process a line: "{input}".')
-            sys.exit(255)
+            print(f'\n{"!"*16}Failed to process a line: "{input}".\n{"!"*16}')
+            continue
+            # sys.exit(255)
 
         # #   [0]                 [1]             [2]         [3]     [4]     [5]     [6]     [7]         [8]
         # # TransactionDate, TransactionType, SecurityType, Symbol, Quantity, Amount, Price, Commission, Description
@@ -214,7 +200,7 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
     return gsheet
 
 
-def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
+def translate_etrade_file(srcFile: Path, crossRef: Dict[str, str]) -> bool:
     """Translate an eTrade file.
 
     param srcFile - Path + name of source file;
@@ -223,16 +209,17 @@ def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
     Returns 0 if successful, or False otherwise.
     """
 
-    print(f'Processing source file: "{srcFile}".')
+    print(f'Processing source file:\n  "{srcFile}".')
     # Step 1: Read the source file.
     file_contents = read(srcFile)
     if file_contents:
-        print(f'  Read {len(file_contents)} lines from file.')
+        print(f'  Read {len(file_contents)} lines from file:\n{file_contents}')
         # Step 2: Read the account number.
         acct_no = get_acct_no(file_contents[0])
         if acct_no:
             print(f'  Read account number: "{acct_no}".')
             filtered_contents = strip_header(file_contents)
+            pprint(filtered_contents)
 
             sorted_contents = filtered_contents
             sorted_contents.sort()
@@ -245,6 +232,7 @@ def translate_etrade_file(srcFile: str, crossRef: Dict[str, str]) -> bool:
 
             # Step 3b Sort on date.
             tokenized_contents.sort(key=lambda row: row[0])
+            pprint(tokenized_contents)
             # print(
             #     f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
             # print(f'  {"  Line [-1]:":>12} {tokenized_contents[-1]}')

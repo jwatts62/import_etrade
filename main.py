@@ -20,8 +20,10 @@ Output:
     eTrade,2641,12/31/19,Buy,JSPGX,JANUS HENDERSON GLOBAL ALLOCATJANUS HENDERSON,5.834,13.04,-81.33,,,
 
 """
+
+
+from pathlib import Path
 from typing import List, Tuple
-# import re
 from sys import exit
 
 from pprint import pprint
@@ -46,10 +48,14 @@ if __name__ == '__main__':
     Returns 0 if successful, or False otherwise.
     """
 
-    ROOT_FOLDER = './data/'
+    # ROOT_FOLDER = './data/'
+    ROOT_FOLDER = Path(
+        '/Users/johnwatts/Documents/Finances/Investments/eTrade/2641-investments/')
+
     # srcFile = f'{ROOT_FOLDER}transactions.csv'
     # srcFile = f'{ROOT_FOLDER}2641-Q4-2022.csv'
-    srcFile = f'{ROOT_FOLDER}2641-Q3-2022.csv'
+    # srcFile = f'{ROOT_FOLDER}2641-Q3-2022.csv'
+    srcFile = ROOT_FOLDER / Path('DownloadTxnHistory.csv')
     xRef = dict()
     if translate_etrade_file(srcFile, xRef):
         pprint(xRef)
