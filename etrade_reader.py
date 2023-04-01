@@ -56,7 +56,7 @@ def get_acct_no(line: str) -> str:
         print(
             f'\n{"#"*32}\nERROR: {__name__}()= >\n'
             f'  Failed to extract account number from file header.\n  >{line}<'
-            f'\n'{"#"*32}\n')
+            f'\n{"#"*32}\n')
 
     return acct_no
 
@@ -184,14 +184,18 @@ def translate(etrade: List[List[str]], crossRef: Dict[str, str]) -> List[List[st
             activity = 'Sell'
 
         else:
-            print(f'\n{"!"*16}Failed to process a line: "{input}".\n{"!"*16}')
+            print(
+                f'\n{"#"*32}\nERROR: {__name__}()= >\n'
+                f'  Failed to process a line\n  >{input}<'
+                f'\n{"#"*32}\n')
+            # print(f'\n{"!"*16}Failed to process a line: "{input}".\n{"!"*16}')
             continue
             # sys.exit(255)
 
         # #   [0]                 [1]             [2]         [3]     [4]     [5]     [6]     [7]         [8]
         # # TransactionDate, TransactionType, SecurityType, Symbol, Quantity, Amount, Price, Commission, Description
         line = f'{date},{activity},{symbol},{quantity},{price},{amount},{fees},{description}'
-        print(f'\n{input}\n{line}')
+        # print(f'\n{input}\n{line}')
         #           Date,   Type, Symbol,     Qty,      Price,      Amount, Fee
         gsheet.append(line)
 
@@ -211,17 +215,17 @@ def translate_etrade_file(srcFile: Path, crossRef: Dict[str, str]) -> bool:
     Returns 0 if successful, or False otherwise.
     """
 
-    print(f'Processing source file:\n  "{srcFile}".')
+    print(f'\n\nProcessing source file:\n  "{srcFile}".')
     # Step 1: Read the source file.
     file_contents = read(srcFile)
     if file_contents:
-        print(f'  Read {len(file_contents)} lines from file:\n{file_contents}')
+        print(f'  Read {len(file_contents)} lines from file:\n  "{srcFile}".')
         # Step 2: Read the account number.
         acct_no = get_acct_no(file_contents[0])
         if acct_no:
             print(f'  Read account number: "{acct_no}".')
             filtered_contents = strip_header(file_contents)
-            pprint(filtered_contents)
+            # pprint(filtered_contents)
 
             sorted_contents = filtered_contents
             sorted_contents.sort()
@@ -234,7 +238,7 @@ def translate_etrade_file(srcFile: Path, crossRef: Dict[str, str]) -> bool:
 
             # Step 3b Sort on date.
             tokenized_contents.sort(key=lambda row: row[0])
-            pprint(tokenized_contents)
+            # pprint(tokenized_contents)
             # print(
             #     f'\n  first/last tokens:\n  {"  Line 0:":>12} {tokenized_contents[0]}')
             # print(f'  {"  Line [-1]:":>12} {tokenized_contents[-1]}')
@@ -255,6 +259,12 @@ def translate_etrade_file(srcFile: Path, crossRef: Dict[str, str]) -> bool:
             return True
 
         else:
+            print(
+                f'\n{"#"*32}\nERROR: {__name__}()= >\n'
+                f'  Failed to retrieve account number from line:\n  "{file_contents[0]}"\n'
+                f'  from file: "{srcFile}".'
+                f'\n{"#"*32}\n')
+
             print(
                 f'*** ERROR: {__name__}() =>\n  Failed to retrieve account number from line:\n  "{file_contents[0]}"\n'
                 f'  from file: "{srcFile}".')
